@@ -19,6 +19,7 @@ elceo.com
 arenapublica.com
 diarioelindependiente.mx
 pscp.tv
+plumasatomicas.com
 regeneracion.mx
 mvsnoticias.com
 publimetro.com.mx
@@ -79,7 +80,6 @@ themazatlanpost.com
 sg.com.mx
 superrucos.com
 elsoldeacapulco.com.mx
-facebook.com
 elpais.com
 elmercurio.com.mx
 taringa.net
