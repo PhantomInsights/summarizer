@@ -15,6 +15,7 @@ This project uses the following Python libraries
 * `NLTK` : Used to tokenize the article into sentences.
 * `PRAW` : Makes the use of the Reddit API very easy.
 * `Requests` : To perform HTTP `get` requests to the articles urls.
+* `HTML5lib` : This parser has better results for websites that are not well formatted.
 * `BeautifulSoup` : USed for extracting the article text.
 * `tldextract` : Used to extract the domain from an url.
 
