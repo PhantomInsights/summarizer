@@ -2,7 +2,7 @@
 
 This project implements a custom algorithm to extract the most important sentences and keywords from Spanish news articles.
 
-It was fully developed in `Python` and it is inspired by similar projects seen on `Reddit` news subreddits.
+It was fully developed in `Python` and it is inspired by similar projects seen on `Reddit` news subreddits that use the term frequency–inverse document frequency (`tf–idf`).
 
 The most 2 important files are:
 
@@ -12,19 +12,19 @@ The most 2 important files are:
 
 This project uses the following Python libraries
 
-* `nltk`
-* `PRAW`
-* `Requests`
-* `BeautifulSoup`
-* `tldextract`
+* `NLTK` : Used to tokenize the article into sentences.
+* `PRAW` : Makes the use of the Reddit API very easy.
+* `Requests` : To perform HTTP `get` requests to the articles urls.
+* `BeautifulSoup` : USed for extracting the article text.
+* `tldextract` : Used to extract the domain from an url.
 
-After installing the `nltk` library you must run the following command to install the tokenizers.
+After installing the `NLTK` library you must run the following command to install the tokenizers.
 
 `import nltk; nltk.download("punkt")`
 
 ## Reddit Bot
 
-The bot is simple in nature, it uses the `PRAW` library which is very straightforward to use. The bot polls a subreddit every 15 mins to get its latest posts.
+The bot is simple in nature, it uses the `PRAW` library which is very straightforward to use. The bot polls a subreddit every 10 minutes to get its latest posts.
 
 It first detects if the post hasn't already been processed and then checks if the post url is in the whitelist. This whitelist is currently curated by myself.
 
@@ -90,7 +90,7 @@ if len(article) <= 500:
 
     for div in soup.find_all("div"):
 
-        if "article" in div["id"] or "summary" in div["id"] or "content" in div["id"]:
+        if "article" in div["id"] or "summary" in div["id"] or "cont" in div["id"]:
 
             if len(div.text) >= len(article):
                 article = div.text
@@ -103,7 +103,9 @@ if len(article) <= 500:
 
     for div in soup.find_all("div"):
 
-        if "article" in div["class"] or "summary" in div["class"] or "content" in div["class"]:
+        class_name = "".join(div["class"])
+
+        if "article" in class_name or "summary" in class_name or "cont" in class_name:
 
             if len(div.text) >= len(article):
                 article = div.text
@@ -179,7 +181,10 @@ To do this we first need to split the article into sentences. I tried various ap
 scored_sentences = list()
 
 for index, line in enumerate(tokenize.sent_tokenize(cleaned_article)):
-    scored_sentences.append([score_line(line, scored_words), index, line])
+    
+    # In some edge cases we have duplicated sentences, we make sure that doesn't happen.
+    if line not in [line for score, index, line in scored_sentences]:
+        scored_sentences.append([score_line(line, scored_words), index, line])
 ```
 
 `scored_sentences` is a list of lists. Each inner list contains 3 values. The sentence score, its index and the sentence itself. Those values will be used in the next step.
@@ -228,14 +233,12 @@ for score, index, sentence in sorted(scored_sentences, reverse=True):
 return [sentence for index, sentence in sorted(top_sentences)]
 ```
 
-
-
-
 At the end we use a list comprehension to return only the sentences which are already sorted in chronological order.
 
 ## Conclusion
 
 This was a very fun and interesting project to work on. I may have reinvented the wheel but at least I learned a few cool things.
 
-I'm satisfied with the overall quality of results and will keep tweaking the algorithm.
+I'm satisfied with the overall quality of the results and I will keep tweaking the algorithm.
 
+As a side note, when testing the script I accidentally requested Tweets, Facebook posts and English written articles. All of them got acceptable outputs, but since those sites are not the target I removed them from the whitelist.
