@@ -176,7 +176,7 @@ def extract_article_from_url(url):
         for div in soup.find_all("div"):
 
             try:
-                if "article" in div["id"] or "summary" in div["id"] or "content" in div["id"]:
+                if "article" in div["id"] or "summary" in div["id"] or "cont" in div["id"]:
 
                     # We guarantee to get the longest div.
                     if len(div.text) >= len(article):
@@ -190,7 +190,9 @@ def extract_article_from_url(url):
         for div in soup.find_all("div"):
 
             try:
-                if "article" in div["class"] or "summary" in div["class"] or "content" in div["class"]:
+                class_name = "".join(div["class"])
+
+                if "article" in class_name or "summary" in class_name or "cont" in class_name:
 
                     # We guarantee to get the longest div.
                     if len(div.text) >= len(article):
