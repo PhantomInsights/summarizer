@@ -21,7 +21,7 @@ LINE_LENGTH_THRESHOLD = 200
 # Otherwise it will take into account partial words.
 COMMON_WORDS = [
     ",", "|", "-", "‘", "’", ";", "(", ")", ".", ":", "¿", "?", '“', '”', '"', "'",
-    " Un ", " Una ", " El ", " La ", " Los ", " Las ", " Y ", " A ", " Si ", " No ", " Su ",
+    " Un ", " Una ", " El ", " La ", " Los ", " Las ", " Y ", " A ", " O ", " Si ", " No ", " Su ",
     " En ", " Foto ", " Video ", " De ", " Va ", " Como ", " Cuando ", " Que ", " Por ", " Ser ",
     " Para ", " Sus ", " Más ", " Del ", " Es ", " Al ", " Lo ", " Le ", " Les ", " Con ",
     " Son ", " Se ", " Redacción ", " Pero ", " Cual ", " Esto ", " Uno ", " Dos ", " Tres ",
@@ -194,7 +194,10 @@ def get_top_sentences(cleaned_article, scored_words):
 
     # We take a reference of the order of the sentences, this will be used later.
     for index, line in enumerate(tokenize.sent_tokenize(cleaned_article)):
-        scored_sentences.append([score_line(line, scored_words), index, line])
+        
+        # In some edge cases we have duplicated sentences, we make sure that doesn't happen.
+        if line not in [line for score, index, line in scored_sentences]:
+            scored_sentences.append([score_line(line, scored_words), index, line])
 
     top_sentences = list()
     counter = 0
