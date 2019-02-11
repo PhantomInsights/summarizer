@@ -148,7 +148,7 @@ def extract_article_from_url(url):
         html_source = response.text
 
     # We create a BeautifulSOup object and remove the unnecessary tags.
-    soup = BeautifulSoup(html_source, "html.parser")
+    soup = BeautifulSoup(html_source, "html5lib")
     [tag.extract() for tag in soup.find_all(["script", "img", "a"])]
 
     for tag in soup.find_all("div"):
@@ -173,7 +173,7 @@ def extract_article_from_url(url):
     # The article is too short, let's try to find it in another tag.
     if len(article) <= 500:
 
-        for div in soup.find_all("div"):
+        for div in soup.find_all(["div", "section"]):
 
             try:
                 if "article" in div["id"] or "summary" in div["id"] or "cont" in div["id"]:
@@ -187,7 +187,7 @@ def extract_article_from_url(url):
     # The article is still too short, let's try one more time.
     if len(article) <= 500:
 
-        for div in soup.find_all("div"):
+        for div in soup.find_all(["div", "section"]):
 
             try:
                 class_name = "".join(div["class"])
