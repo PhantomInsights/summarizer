@@ -17,7 +17,7 @@ ERROR_LOG = "./error.log"
 
 # Header and Footer templates.
 HEADER = """### {} \n\n*****\n\n"""
-FOOTER = """*****\n\n*Reducido en un {:.2f}%. Este bot se encuentra en fase de pruebas*.\n\n[Nota Original]({}) | [GitHub](https://git.io/fhQkC) | {}"""
+FOOTER = """*****\n\n*Reducido en un {:.2f}%. Este bot se encuentra en fase de pruebas, tus sugerencias y comentarios son bienvenidos.*\n\n[Nota Original]({}) | [GitHub](https://git.io/fhQkC) | {}"""
 
 
 def load_whitelist():
@@ -142,25 +142,41 @@ def extract_article_from_url(url):
 
     """
 
-    headers = {"User-Agent": "Summarizer v0.1"}
+    headers = {"User-Agent": "Summarizer v0.2"}
 
     with requests.get(url, headers=headers) as response:
+
+        # Sometimes Requests makes an incorrect guess, we force it to use utf-8
+        if response.encoding == "ISO-8859-1":
+            response.encoding = "utf-8"
+
         html_source = response.text
 
     # We create a BeautifulSOup object and remove the unnecessary tags.
-    soup = BeautifulSoup(html_source, "html5lib")
-    [tag.extract() for tag in soup.find_all(["script", "img", "a"])]
+    # We also apply a little hack to make sure paragraphs are separated.
+    soup = BeautifulSoup(html_source.replace("</p>", "</p>\n"), "html5lib")
+    [tag.extract() for tag in soup.find_all(["script", "img", "a", "time", "h1"])]
 
     for tag in soup.find_all("div"):
 
         try:
-            if "image" in tag["id"] or "img" in tag["id"] or "video" in tag["id"]:
+            if "image" in tag["id"] or "img" in tag["id"] or "video" in tag["id"] or "hidden" in tag["id"]:
+                tag.extract()
+        except:
+            pass
+
+    for tag in soup.find_all("div"):
+
+        try:
+            tag_class = "".join(tag["class"])
+
+            if "image" in tag_class or "img" in tag_class or "video" in tag_class:
                 tag.extract()
         except:
             pass
 
     # Then we extract the title and the article tags.
-    title = soup.find("title").text.strip()
+    title = soup.find("title").text.replace("\n", " ").strip()
 
     article = ""
 
@@ -171,32 +187,31 @@ def extract_article_from_url(url):
             article = article_tag.text
 
     # The article is too short, let's try to find it in another tag.
-    if len(article) <= 500:
+    if len(article) <= 650:
 
-        for div in soup.find_all(["div", "section"]):
+        for tag in soup.find_all(["div", "section"]):
 
             try:
-                if "article" in div["id"] or "summary" in div["id"] or "cont" in div["id"]:
-
+                if "artic" in tag["id"] or "summary" in tag["id"] or "cont" in tag["id"] or "note" in tag["id"]:
                     # We guarantee to get the longest div.
-                    if len(div.text) >= len(article):
-                        article = div.text
+                    if len(tag.text) >= len(article):
+                        article = tag.text
             except:
                 pass
 
     # The article is still too short, let's try one more time.
-    if len(article) <= 500:
+    if len(article) <= 650:
 
-        for div in soup.find_all(["div", "section"]):
+        for tag in soup.find_all(["div", "section"]):
 
             try:
-                class_name = "".join(div["class"])
+                tag_class = "".join(tag["class"])
 
-                if "article" in class_name or "summary" in class_name or "cont" in class_name:
+                if "artic" in tag_class or "summary" in tag_class or "cont" in tag_class or "note" in tag_class:
 
                     # We guarantee to get the longest div.
-                    if len(div.text) >= len(article):
-                        article = div.text
+                    if len(tag.text) >= len(article):
+                        article = tag.text
             except:
                 pass
 
