@@ -4,7 +4,7 @@ This project implements a custom algorithm to extract the most important sentenc
 
 It was fully developed in `Python` and it is inspired by similar projects seen on `Reddit` news subreddits that use the term frequency–inverse document frequency (`tf–idf`).
 
-The most 2 important files are:
+The 2 most important files are:
 
 * `summary.py` : A Python script that applies a custom algorithm to a string of text and extracts the top ranked sentences and words.
 
@@ -15,7 +15,6 @@ This project uses the following Python libraries
 * `NLTK` : Used to tokenize the article into sentences.
 * `PRAW` : Makes the use of the Reddit API very easy.
 * `Requests` : To perform HTTP `get` requests to the articles urls.
-* `HTML5lib` : This parser has better results for websites that are not well formatted.
 * `BeautifulSoup` : USed for extracting the article text.
 * `tldextract` : Used to extract the domain from an url.
 
@@ -41,10 +40,16 @@ We start the web scraper on the usual way, with the `Requests` and `BeautifulSou
 
 ```python
 with requests.get(article_url) as response:
+    
+    if response.encoding == "ISO-8859-1":
+        response.encoding = "utf-8"
+
     html_source = response.text
 
 soup = BeautifulSoup(html_source, "html.parser")
 ```
+
+Very few times I got encoding issues caused by an incorrect encoding guess. To avoid this issue I force Requests to decode with `utf-8`.
 
 My original idea was to only accept websites that used the `<article>` tag. It worked ok, but I soon realized that very few websites use it and those who use it don't use it correctly.
 
@@ -55,7 +60,7 @@ article = soup.find("article").text
 When accessing the `.text` property of the `<article>` tag I noticed I was also getting the JavaScript code. I backtracked a bit and removed all tags which could add *noise* to the article text.
 
 ```python
-[tag.extract() for tag in soup.find_all(["script", "img", "a"])]
+[tag.extract() for tag in soup.find_all(["script", "img", "a", "time", "h1"])]
 
 for tag in soup.find_all("div"):
 
@@ -83,36 +88,38 @@ That worked fine for websites that properly used the `<article>` tag. The longes
 
 But that didn't quite worked as expected, I noticed poor quality on the results, sometimes I was getting excerpts for other articles.
 
-That's when I decided to add the fallback, lnstead of only looking for the `<article>` tag I will be looking for a `<div>` tag with commonly used `id's`.
+That's when I decided to add the fallback, lnstead of only looking for the `<article>` tag I will be looking for `<div>` and `<section>` tags with commonly used `id's`.
 
 ```python
 # If the article is too short we look somewhere else.
-if len(article) <= 500:
+if len(article) <= 650:
 
-    for div in soup.find_all("div"):
+    for tag in soup.find_all(["div", "section"]):
 
-        if "article" in div["id"] or "summary" in div["id"] or "cont" in div["id"]:
-
-            if len(div.text) >= len(article):
-                article = div.text
+        if "artic" in tag["id"] or "summary" in tag["id"] or "cont" in tag["id"] or "note" in tag["id"]:
+            # We guarantee to get the longest div.
+            if len(tag.text) >= len(article):
+                article = tag.text
 ```
 
 That increased the accuracy quite a bit, I repeated the code but instead of the `id` attribute I was also looking for the `class` attribute.
 
 ```python
-if len(article) <= 500:
+# The article is still too short, let's try one more time.
+if len(article) <= 650:
 
-    for div in soup.find_all("div"):
+    for tag in soup.find_all(["div", "section"]):
 
-        class_name = "".join(div["class"])
+        tag_class = "".join(tag["class"])
 
-        if "article" in class_name or "summary" in class_name or "cont" in class_name:
+        if "artic" in tag_class or "summary" in tag_class or "cont" in tag_class or "note" in tag_class:
 
-            if len(div.text) >= len(article):
-                article = div.text
+            # We guarantee to get the longest div.
+            if len(tag.text) >= len(article):
+                article = tag.text
 ```
 
-Using all the previous methods greatly increased the overall accuracy of the scraper. The scraper was now compatible with all the urls I tested.
+Using all the previous methods greatly increased the overall accuracy of the scraper. In some cases I used partial words that share the same letters in English and Spanish (artic -> article/articulo). The scraper was now compatible with all the urls I tested.
 
 We make a final check and if the article is still too short we abort the process and move to the next url, otherwise we move to the summary algorithm.
 
@@ -176,7 +183,7 @@ for word in scored_words:
 
 Now that we have the final scores for each word it is time to score each sentence from the article.
 
-To do this we first need to split the article into sentences. I tried various approaches but the one that worked best was the `nltk` library.
+To do this we first need to split the article into sentences. I tried various approaches, including `RegEx` but the one that worked best was the `NLTK` library.
 
 ```python
 scored_sentences = list()
