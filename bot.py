@@ -12,7 +12,7 @@ import summary
 
 
 # We don't reply to posts which have a very small reduction.
-MINMUM_REDUCTION_THRESHOLD = 20
+MINIMUM_REDUCTION_THRESHOLD = 20
 
 # We don't process articles smaller than this.
 ARTICLE_MINIMUM_LENGTH = 650
@@ -130,7 +130,7 @@ def init():
                     summary_dict["title"], summary_dict["reduction"]) + post_body + FOOTER.format(submission.url, top_words)
 
                 # To reduce low quality submissions, we only process those that made a meaningful summary.
-                if summary_dict["reduction"] >= MINMUM_REDUCTION_THRESHOLD:
+                if summary_dict["reduction"] >= MINIMUM_REDUCTION_THRESHOLD:
                     reddit.submission(submission).reply(post_message)
                     update_log(submission.id)
                     print("Replied to:", submission.id)
