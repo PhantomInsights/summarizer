@@ -25,8 +25,8 @@ COMMON_WORDS = [
     " En ", " Foto ", " Video ", " De ", " Va ", " Como ", " Cuando ", " Que ", " Por ", " Ser ",
     " Para ", " Sus ", " Más ", " Del ", " Es ", " Al ", " Lo ", " Le ", " Les ", " Con ", " Sino ",
     " Son ", " Se ", " Redacción ", " Pero ", " Cual ", " Esto ", " Uno ", " Dos ", " Tres ", " Donde ",
-    " Cuatro ", " Cinco ", " Seis ", " Siete ", " Ocho ", " Nueve ", " Diez ", " Cien ", " Mil "
-    " Miles ", " Cientos ", " Millones "
+    " Cuatro ", " Cinco ", " Seis ", " Siete ", " Ocho ", " Nueve ", " Diez ", " Cien ", " Mil ",
+    " Miles ", " Cientos ", " Millones ", " Tras "
 ]
 
 
