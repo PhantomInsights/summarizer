@@ -30,6 +30,8 @@ It first detects if the post hasn't already been processed and then checks if th
 
 If the post and its url passes both checks then a process of web scraping is applied to the url, this is where things start getting interesting.
 
+Before replying to the original submission it checks the percentage of the reduction achieved, if it's too low it skips it and moves to the next submission.
+
 ## Web Scraper
 
 Currently in the whitelist there are already more than 100 different domains of news websites. Creating specialized web scrapers for each one is simply not feasible.
