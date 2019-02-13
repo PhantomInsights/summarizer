@@ -10,14 +10,21 @@ from bs4 import BeautifulSoup
 import config
 import summary
 
+
+# We don't reply to posts which have a very small reduction.
+MINMUM_REDUCTION_THRESHOLD = 20
+
+# We don't process articles smaller than this.
+ARTICLE_MINIMUM_LENGTH = 650
+
 # File locations
 POSTS_LOG = "./processed_posts.txt"
 WHITELIST_FILE = "./whitelist.txt"
 ERROR_LOG = "./error.log"
 
 # Header and Footer templates.
-HEADER = """### {} \n\n*****\n\n"""
-FOOTER = """*****\n\n*Reducido en un {:.2f}%. Este bot se encuentra en fase de pruebas, tus sugerencias y comentarios son bienvenidos.*\n\n[Nota Original]({}) | [GitHub](https://git.io/fhQkC) | {}"""
+HEADER = """### {} \n\nReducido en un {:.2f}%\n\n*****\n\n"""
+FOOTER = """*****\n\n*^Este ^bot ^solo ^responde ^cuando ^logra ^resumir ^en ^un ^mínimo ^del ^20%. ^Este ^bot ^se ^encuentra ^en ^fase ^de ^pruebas, ^tus ^sugerencias ^y ^comentarios ^son ^bienvenidos. ​*\n\n[Nota Original]({}) | [GitHub](https://git.io/fhQkC) | {}"""
 
 
 def load_whitelist():
@@ -120,11 +127,13 @@ def init():
                     top_words += "{}^#{} ".format(word, index+1)
 
                 post_message = HEADER.format(
-                    summary_dict["title"]) + post_body + FOOTER.format(summary_dict["reduction"], submission.url, top_words)
+                    summary_dict["title"], summary_dict["reduction"]) + post_body + FOOTER.format(submission.url, top_words)
 
-                reddit.submission(submission).reply(post_message)
-                update_log(submission.id)
-                print("Replied to:", submission.id)
+                # To reduce low quality submissions, we only process those that made a meaningful summary.
+                if summary_dict["reduction"] >= MINMUM_REDUCTION_THRESHOLD:
+                    reddit.submission(submission).reply(post_message)
+                    update_log(submission.id)
+                    print("Replied to:", submission.id)
 
 
 def extract_article_from_url(url):
@@ -187,7 +196,7 @@ def extract_article_from_url(url):
             article = article_tag.text
 
     # The article is too short, let's try to find it in another tag.
-    if len(article) <= 650:
+    if len(article) <= ARTICLE_MINIMUM_LENGTH:
 
         for tag in soup.find_all(["div", "section"]):
 
@@ -200,7 +209,7 @@ def extract_article_from_url(url):
                 pass
 
     # The article is still too short, let's try one more time.
-    if len(article) <= 650:
+    if len(article) <= ARTICLE_MINIMUM_LENGTH:
 
         for tag in soup.find_all(["div", "section"]):
 
