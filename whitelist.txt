@@ -25,7 +25,6 @@ mvsnoticias.com
 publimetro.com.mx
 wikihow.com
 discountflights.com.mx
-cnn.com
 themexico.news
 aristeguinoticias.com
 pulsoslp.com.mx
@@ -118,7 +117,6 @@ moreloshabla.com
 washingtonpost.com
 dailywire.com
 soyhomosensual.com
-vice.com
 ft.com
 wsj.com
 blogspot.com
@@ -196,3 +194,6 @@ noticiasdequeretaro.com.mx
 expansion.mx
 elimparcial.com
 cargonewsmex.com
+contrareplica.mx
+unam.mx
+lavozdelafrontera.com.mx
