@@ -161,10 +161,14 @@ def extract_article_from_url(url):
 
         html_source = response.text
 
+    # Very often the text between tags comes together, we add an artificial newline to each common tag.
+    for item in ["</p>", "</blockquote>", "</div>", "</h2>", "</h3>"]:
+        html_source = html_source.replace(item, item+"\n")
+
     # We create a BeautifulSOup object and remove the unnecessary tags.
-    # We also apply a little hack to make sure paragraphs are separated.
-    soup = BeautifulSoup(html_source.replace("</p>", "</p>\n"), "html5lib")
-    [tag.extract() for tag in soup.find_all(["script", "img", "a", "time", "h1"])]
+    soup = BeautifulSoup(html_source, "html5lib")
+    [tag.extract() for tag in soup.find_all(
+        ["script", "img", "a", "time", "h1", "iframe", "style", "form", "footer"])]
 
     for tag in soup.find_all("div"):
 
@@ -201,7 +205,9 @@ def extract_article_from_url(url):
         for tag in soup.find_all(["div", "section"]):
 
             try:
-                if "artic" in tag["id"] or "summary" in tag["id"] or "cont" in tag["id"] or "note" in tag["id"]:
+                tag_id = tag["id"].lower()
+
+                if "artic" in tag_id or "summary" in tag_id or "cont" in tag_id or "note" in tag_id:
                     # We guarantee to get the longest div.
                     if len(tag.text) >= len(article):
                         article = tag.text
@@ -214,7 +220,7 @@ def extract_article_from_url(url):
         for tag in soup.find_all(["div", "section"]):
 
             try:
-                tag_class = "".join(tag["class"])
+                tag_class = "".join(tag["class"]).lower()
 
                 if "artic" in tag_class or "summary" in tag_class or "cont" in tag_class or "note" in tag_class:
 
