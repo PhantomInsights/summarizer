@@ -15,12 +15,12 @@ This project uses the following Python libraries
 * `NLTK` : Used to tokenize the article into sentences.
 * `PRAW` : Makes the use of the Reddit API very easy.
 * `Requests` : To perform HTTP `get` requests to the articles urls.
-* `BeautifulSoup` : USed for extracting the article text.
+* `BeautifulSoup` : Used for extracting the article text.
 * `tldextract` : Used to extract the domain from an url.
 
 After installing the `NLTK` library you must run the following command to install the tokenizers.
 
-`import nltk; nltk.download("punkt")`
+`python -c "import nltk; nltk.download('punkt')"`
 
 ## Reddit Bot
 
@@ -48,10 +48,15 @@ with requests.get(article_url) as response:
 
     html_source = response.text
 
+for item in ["</p>", "</blockquote>", "</div>", "</h2>", "</h3>"]:
+    html_source = html_source.replace(item, item+"\n")
+
 soup = BeautifulSoup(html_source, "html.parser")
 ```
 
 Very few times I got encoding issues caused by an incorrect encoding guess. To avoid this issue I force Requests to decode with `utf-8`.
+
+When grabbing the text from different tags I often got the strings without separation. I implemented a little hack to add new lines to each tag that usually has text inside. This improved the overall accuracy significantly.
 
 My original idea was to only accept websites that used the `<article>` tag. It worked ok, but I soon realized that very few websites use it and those who use it don't use it correctly.
 
@@ -62,12 +67,15 @@ article = soup.find("article").text
 When accessing the `.text` property of the `<article>` tag I noticed I was also getting the JavaScript code. I backtracked a bit and removed all tags which could add *noise* to the article text.
 
 ```python
-[tag.extract() for tag in soup.find_all(["script", "img", "a", "time", "h1"])]
+[tag.extract() for tag in soup.find_all(["script", "img", "a", "time", "h1", "iframe", "style", "form", "footer"])]
 
 for tag in soup.find_all("div"):
 
-if "image" in tag["id"] or "img" in tag["id"] or "video" in tag["id"]:
-    tag.extract()
+
+    tag_id = tag["id"].lower()
+
+    if "image" in tag_id or "img" in tag_id or "video" in tag_id or "hidden" in tag_id:
+        tag.extract()
 ```
 
 The above code removed most captions, which usually repeat what's inside in the article.
@@ -98,7 +106,9 @@ if len(article) <= 650:
 
     for tag in soup.find_all(["div", "section"]):
 
-        if "artic" in tag["id"] or "summary" in tag["id"] or "cont" in tag["id"] or "note" in tag["id"]:
+        tag_id = tag["id"].lower()
+
+        if "artic" in tag_id or "summary" in tag_id or "cont" in tag_id or "note" in tag_id:
             # We guarantee to get the longest div.
             if len(tag.text) >= len(article):
                 article = tag.text
@@ -112,7 +122,7 @@ if len(article) <= 650:
 
     for tag in soup.find_all(["div", "section"]):
 
-        tag_class = "".join(tag["class"])
+        tag_class = "".join(tag["class"]).lower()
 
         if "artic" in tag_class or "summary" in tag_class or "cont" in tag_class or "note" in tag_class:
 
@@ -129,10 +139,10 @@ We make a final check and if the article is still too short we abort the process
 
 This algorithm was designed to work primarily on Spanish written articles. It consists on several steps:
 
-1. Reformat and clean the article by removing all whitespaces.
-2. Remove all common used words.
-3. Split the article into words and score each word.
-4. Split the article into sentences and score each sentence using the scores from the words.
+1. Reformat and clean the original article by removing all whitespaces.
+2. Make a copy of the original article and remove all common used words from it.
+3. Split the copied article into words and score each word.
+4. Split the original article into sentences and score each sentence using the scores from the words.
 5. Take the top 5 sentences and top 5 words and return them in chronological order.
 
 ### Clean the Article
@@ -163,7 +173,7 @@ Afterwards I used a `collections.Counter` object to do the initial scoring.
 
 Then I applied a multiplier bonus to words that start in uppercase and are equal or longer than 4 characters. Most of the time those words are names of places, people or organizations.
 
-Finally I set to zero the score For all words that are actually numbers.
+Finally I set to zero the score for all words that are actually numbers.
 
 ```python
 for item in COMMON_WORDS:
