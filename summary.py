@@ -15,7 +15,7 @@ NUMBER_OF_TOP_WORDS = 5
 IMPORTANT_WORDS_MULTIPLIER = 3
 
 # The minimum number of characters needed for a line to be valid.
-LINE_LENGTH_THRESHOLD = 180
+LINE_LENGTH_THRESHOLD = 150
 
 # It is very important to add spaces on these words.
 # Otherwise it will take into account partial words.
@@ -26,7 +26,7 @@ COMMON_WORDS = [
     " Para ", " Sus ", " Más ", " Del ", " Es ", " Al ", " Lo ", " Le ", " Les ", " Con ", " Sino ",
     " Son ", " Se ", " Redacción ", " Pero ", " Cual ", " Esto ", " Uno ", " Dos ", " Tres ", " Donde ",
     " Cuatro ", " Cinco ", " Seis ", " Siete ", " Ocho ", " Nueve ", " Diez ", " Cien ", " Mil ",
-    " Miles ", " Cientos ", " Millones ", " Tras "
+    " Miles ", " Cientos ", " Millones ", " Tras ", " Pues ", " Vale "
 ]
 
 
