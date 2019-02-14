@@ -16,6 +16,7 @@ This project uses the following Python libraries
 * `PRAW` : Makes the use of the Reddit API very easy.
 * `Requests` : To perform HTTP `get` requests to the articles urls.
 * `BeautifulSoup` : Used for extracting the article text.
+* `html5lib` : This parser got better compatibility when used with `BeautifulSoup`.
 * `tldextract` : Used to extract the domain from an url.
 
 After installing the `NLTK` library you must run the following command to install the tokenizers.
@@ -51,12 +52,12 @@ with requests.get(article_url) as response:
 for item in ["</p>", "</blockquote>", "</div>", "</h2>", "</h3>"]:
     html_source = html_source.replace(item, item+"\n")
 
-soup = BeautifulSoup(html_source, "html.parser")
+soup = BeautifulSoup(html_source, "html5lib")
 ```
 
 Very few times I got encoding issues caused by an incorrect encoding guess. To avoid this issue I force Requests to decode with `utf-8`.
 
-When grabbing the text from different tags I often got the strings without separation. I implemented a little hack to add new lines to each tag that usually has text inside. This improved the overall accuracy significantly.
+When grabbing the text from different tags I often got the strings without separation. I implemented a little hack to add new lines to each tag that usually contains text. This improved the overall accuracy significantly.
 
 My original idea was to only accept websites that used the `<article>` tag. It worked ok, but I soon realized that very few websites use it and those who use it don't use it correctly.
 
@@ -259,6 +260,6 @@ At the end we use a list comprehension to return only the sentences which are al
 
 This was a very fun and interesting project to work on. I may have reinvented the wheel but at least I learned a few cool things.
 
-I'm satisfied with the overall quality of the results and I will keep tweaking the algorithm.
+I'm satisfied with the overall quality of the results and I will keep tweaking the algorithm and applying compatibility enhancements.
 
 As a side note, when testing the script I accidentally requested Tweets, Facebook posts and English written articles. All of them got acceptable outputs, but since those sites are not the target I removed them from the whitelist.
