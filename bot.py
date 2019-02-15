@@ -151,7 +151,7 @@ def extract_article_from_url(url):
 
     """
 
-    headers = {"User-Agent": "Summarizer v0.2"}
+    headers = {"User-Agent": "Summarizer v0.3"}
 
     with requests.get(url, headers=headers) as response:
 
@@ -168,22 +168,24 @@ def extract_article_from_url(url):
     # We create a BeautifulSOup object and remove the unnecessary tags.
     soup = BeautifulSoup(html_source, "html5lib")
     [tag.extract() for tag in soup.find_all(
-        ["script", "img", "a", "time", "h1", "iframe", "style", "form", "footer"])]
+        ["script", "img", "ul", "time", "h1", "iframe", "style", "form", "footer"])]
 
     for tag in soup.find_all("div"):
 
         try:
-            if "image" in tag["id"] or "img" in tag["id"] or "video" in tag["id"] or "hidden" in tag["id"]:
+            tag_id = tag["id"].lower()
+
+            if "image" in tag_id or "img" in tag_id or "video" in tag_id or "hidden" in tag_id or "tract" in tag_id:
                 tag.extract()
         except:
             pass
 
-    for tag in soup.find_all("div"):
+    for tag in soup.find_all(["div", "p"]):
 
         try:
-            tag_class = "".join(tag["class"])
+            tag_class = "".join(tag["class"]).lower()
 
-            if "image" in tag_class or "img" in tag_class or "video" in tag_class:
+            if "image" in tag_class or "img" in tag_class or "video" in tag_class or "hidden" in tag_class or "tract" in tag_class:
                 tag.extract()
         except:
             pass
