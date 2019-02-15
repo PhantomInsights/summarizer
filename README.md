@@ -68,7 +68,7 @@ article = soup.find("article").text
 When accessing the `.text` property of the `<article>` tag I noticed I was also getting the JavaScript code. I backtracked a bit and removed all tags which could add *noise* to the article text.
 
 ```python
-[tag.extract() for tag in soup.find_all(["script", "img", "a", "time", "h1", "iframe", "style", "form", "footer"])]
+[tag.extract() for tag in soup.find_all(["script", "img", "ul", "time", "h1", "iframe", "style", "form", "footer"])]
 
 for tag in soup.find_all("div"):
 
