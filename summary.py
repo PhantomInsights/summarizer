@@ -22,11 +22,12 @@ LINE_LENGTH_THRESHOLD = 150
 COMMON_WORDS = [
     ",", "|", "-", "‘", "’", ";", "(", ")", ".", ":", "¿", "?", '“', '”', '"', "'", "•",
     " Un ", " Una ", " El ", " La ", " Los ", " Las ", " Y ", " A ", " O ", " Si ", " No ", " Su ",
-    " En ", " Foto ", " Video ", " De ", " Va ", " Como ", " Cuando ", " Que ", " Por ", " Ser ",
+    " En ", " Foto ", " Video ", " De ", " Va ", " Como ", " Cuando ", " Que ", " Por ", " Ser ", " Ha ",
     " Para ", " Sus ", " Más ", " Del ", " Es ", " Al ", " Lo ", " Le ", " Les ", " Con ", " Sino ",
     " Son ", " Se ", " Redacción ", " Pero ", " Cual ", " Esto ", " Uno ", " Dos ", " Tres ", " Donde ",
-    " Cuatro ", " Cinco ", " Seis ", " Siete ", " Ocho ", " Nueve ", " Diez ", " Cien ", " Mil ",
-    " Miles ", " Cientos ", " Millones ", " Tras ", " Pues ", " Vale "
+    " Cuatro ", " Cinco ", " Seis ", " Siete ", " Ocho ", " Nueve ", " Diez ", " Cien ", " Mil ", " Sé ",
+    " Miles ", " Cientos ", " Millones ", " Tras ", " Pues ", " Vale ", " Entre ", " Contra ", " Me ",
+    " Ni "
 ]
 
 
