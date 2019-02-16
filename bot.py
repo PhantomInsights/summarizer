@@ -162,36 +162,45 @@ def extract_article_from_url(url):
         html_source = response.text
 
     # Very often the text between tags comes together, we add an artificial newline to each common tag.
-    for item in ["</p>", "</blockquote>", "</div>", "</h2>", "</h3>"]:
+    for item in ["</p>", "</blockquote>", "</div>", "</h3>"]:
         html_source = html_source.replace(item, item+"\n")
 
     # We create a BeautifulSOup object and remove the unnecessary tags.
     soup = BeautifulSoup(html_source, "html5lib")
     [tag.extract() for tag in soup.find_all(
-        ["script", "img", "ul", "time", "h1", "iframe", "style", "form", "footer"])]
+        ["script", "img", "ul", "time", "h1", "h2", "h3", "iframe", "style", "form", "footer", "figcaption"])]
+
+    # These class names/ids are known to add noise or duplicate text to the article.
+    noisy_names = ["image", "img", "video", "subheadline",
+                   "hidden", "tract", "caption", "tweet", "expert"]
 
     for tag in soup.find_all("div"):
 
         try:
             tag_id = tag["id"].lower()
 
-            if "image" in tag_id or "img" in tag_id or "video" in tag_id or "hidden" in tag_id or "tract" in tag_id:
-                tag.extract()
+            for item in noisy_names:
+                if item in tag_id:
+                    tag.extract()
         except:
             pass
 
-    for tag in soup.find_all(["div", "p"]):
+    for tag in soup.find_all(["div", "p", "blockquote"]):
 
         try:
             tag_class = "".join(tag["class"]).lower()
 
-            if "image" in tag_class or "img" in tag_class or "video" in tag_class or "hidden" in tag_class or "tract" in tag_class:
-                tag.extract()
+            for item in noisy_names:
+                if item in tag_class:
+                    tag.extract()
         except:
             pass
 
     # Then we extract the title and the article tags.
     title = soup.find("title").text.replace("\n", " ").strip()
+
+    # These names commonly hold the article text.
+    common_names = ["artic", "summary", "cont", "note", "cuerpo", "body"]
 
     article = ""
 
@@ -209,10 +218,11 @@ def extract_article_from_url(url):
             try:
                 tag_id = tag["id"].lower()
 
-                if "artic" in tag_id or "summary" in tag_id or "cont" in tag_id or "note" in tag_id:
-                    # We guarantee to get the longest div.
-                    if len(tag.text) >= len(article):
-                        article = tag.text
+                for item in common_names:
+                    if item in tag_id:
+                        # We guarantee to get the longest div.
+                        if len(tag.text) >= len(article):
+                            article = tag.text
             except:
                 pass
 
@@ -224,11 +234,11 @@ def extract_article_from_url(url):
             try:
                 tag_class = "".join(tag["class"]).lower()
 
-                if "artic" in tag_class or "summary" in tag_class or "cont" in tag_class or "note" in tag_class:
-
-                    # We guarantee to get the longest div.
-                    if len(tag.text) >= len(article):
-                        article = tag.text
+                for item in common_names:
+                    if item in tag_class:
+                        # We guarantee to get the longest div.
+                        if len(tag.text) >= len(article):
+                            article = tag.text
             except:
                 pass
 
