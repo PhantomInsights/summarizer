@@ -68,15 +68,21 @@ article = soup.find("article").text
 When accessing the `.text` property of the `<article>` tag I noticed I was also getting the JavaScript code. I backtracked a bit and removed all tags which could add *noise* to the article text.
 
 ```python
-[tag.extract() for tag in soup.find_all(["script", "img", "ul", "time", "h1", "iframe", "style", "form", "footer"])]
+[tag.extract() for tag in soup.find_all(
+        ["script", "img", "ul", "time", "h1", "h2", "h3", "iframe", "style", "form", "footer", "figcaption"])]
+
+
+# These class names/ids are known to add noise or duplicate text to the article.
+noisy_names = ["image", "img", "video", "subheadline",
+                "hidden", "tract", "caption", "tweet", "expert"]
 
 for tag in soup.find_all("div"):
 
-
     tag_id = tag["id"].lower()
 
-    if "image" in tag_id or "img" in tag_id or "video" in tag_id or "hidden" in tag_id:
-        tag.extract()
+    for item in noisy_names:
+        if item in tag_id:
+            tag.extract()
 ```
 
 The above code removed most captions, which usually repeat what's inside in the article.
@@ -102,6 +108,9 @@ But that didn't quite worked as expected, I noticed poor quality on the results,
 That's when I decided to add the fallback, lnstead of only looking for the `<article>` tag I will be looking for `<div>` and `<section>` tags with commonly used `id's`.
 
 ```python
+# These names commonly hold the article text.
+common_names = ["artic", "summary", "cont", "note", "cuerpo", "body"]
+
 # If the article is too short we look somewhere else.
 if len(article) <= 650:
 
@@ -109,10 +118,11 @@ if len(article) <= 650:
 
         tag_id = tag["id"].lower()
 
-        if "artic" in tag_id or "summary" in tag_id or "cont" in tag_id or "note" in tag_id:
-            # We guarantee to get the longest div.
-            if len(tag.text) >= len(article):
-                article = tag.text
+        for item in common_names:
+            if item in tag_id:
+                # We guarantee to get the longest div.
+                if len(tag.text) >= len(article):
+                    article = tag.text
 ```
 
 That increased the accuracy quite a bit, I repeated the code but instead of the `id` attribute I was also looking for the `class` attribute.
@@ -125,11 +135,11 @@ if len(article) <= 650:
 
         tag_class = "".join(tag["class"]).lower()
 
-        if "artic" in tag_class or "summary" in tag_class or "cont" in tag_class or "note" in tag_class:
-
-            # We guarantee to get the longest div.
-            if len(tag.text) >= len(article):
-                article = tag.text
+        for item in common_names:
+            if item in tag_class:
+                # We guarantee to get the longest div.
+                if len(tag.text) >= len(article):
+                    article = tag.text
 ```
 
 Using all the previous methods greatly increased the overall accuracy of the scraper. In some cases I used partial words that share the same letters in English and Spanish (artic -> article/articulo). The scraper was now compatible with all the urls I tested.
