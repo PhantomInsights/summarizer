@@ -237,8 +237,23 @@ def score_line(line, scored_words):
     for word in temp_line.split(" "):
         temp_score += scored_words[word]
 
+    # We apply a bonus score to sentences that contain financial information.
+    line_lowercase = line.lower()
+    is_financial = False
+
+    for word in FINANCIAL_WORDS:
+        if word in line_lowercase:
+            is_financial = True
+            break
+
+    if is_financial:    
+        temp_score *= 1.5
+
     return temp_score  
 ```
+
+We apply a multiplier to sentences that contain any word that refers to money or finance.
+
 ### Chronological Order
 
 This is the final part of the algorithm, we make use of the `sorted()` function to get the top sentences and then reorder them in their original positions.
