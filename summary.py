@@ -12,7 +12,10 @@ NUMBER_OF_SENTENCES = 5
 NUMBER_OF_TOP_WORDS = 5
 
 # Multiplier for uppercase and long words.
-IMPORTANT_WORDS_MULTIPLIER = 3
+IMPORTANT_WORDS_MULTIPLIER = 2.5
+
+# Financial sentences often are more important than others.
+FINANCIAL_SENTENCE_MULTIPLIER = 1.5
 
 # The minimum number of characters needed for a line to be valid.
 LINE_LENGTH_THRESHOLD = 150
@@ -27,8 +30,11 @@ COMMON_WORDS = [
     " Son ", " Se ", " Redacción ", " Pero ", " Cual ", " Esto ", " Uno ", " Dos ", " Tres ", " Donde ",
     " Cuatro ", " Cinco ", " Seis ", " Siete ", " Ocho ", " Nueve ", " Diez ", " Cien ", " Mil ", " Sé ",
     " Miles ", " Cientos ", " Millones ", " Tras ", " Pues ", " Vale ", " Entre ", " Contra ", " Me ",
-    " Ni "
+    " Ni ", " Nos ", " Eso ", " Qué ", " Mi "
 ]
+
+# These words increase the score of a sentence. They don't require whitespaces around them.
+FINANCIAL_WORDS = ["$", "€", "£", "pesos", "dólar", "libras", "euros", "mdp", "mdd"]
 
 
 def add_extra_words():
@@ -248,5 +254,17 @@ def score_line(line, scored_words):
 
     for word in temp_line.split(" "):
         temp_score += scored_words[word]
+
+    # We apply a bonus score to sentences that contain financial information.
+    line_lowercase = line.lower()
+    is_financial = False
+
+    for word in FINANCIAL_WORDS:
+        if word in line_lowercase:
+            is_financial = True
+            break
+
+    if is_financial:    
+        temp_score *= FINANCIAL_SENTENCE_MULTIPLIER
 
     return temp_score
