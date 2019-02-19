@@ -24,7 +24,7 @@ ERROR_LOG = "./error.log"
 
 # Header and Footer templates.
 HEADER = """### {} \n\nReducido en un {:.2f}%\n\n*****\n\n"""
-FOOTER = """*****\n\n*^Este ^bot ^solo ^responde ^cuando ^logra ^resumir ^en ^un ^mínimo ^del ^20%. ^Este ^bot ^se ^encuentra ^en ^fase ^de ^pruebas, ^tus ^sugerencias ^y ^comentarios ^son ^bienvenidos. ​*\n\n[Nota Original]({}) | [GitHub](https://git.io/fhQkC) | {}"""
+FOOTER = """*****\n\n*^Este ^bot ^solo ^responde ^cuando ^logra ^resumir ^en ^un ^mínimo ^del ^20%. ^Este ^bot ^se ^encuentra ^en ^fase ^de ^pruebas, ^tus ^sugerencias ^y ^comentarios ^son ^bienvenidos. ​*\n\n[Nota Original]({}) | [FAQ](https://redd.it/arkxlg) | [GitHub](https://git.io/fhQkC) | {}"""
 
 
 def load_whitelist():
@@ -172,7 +172,7 @@ def extract_article_from_url(url):
 
     # These class names/ids are known to add noise or duplicate text to the article.
     noisy_names = ["image", "img", "video", "subheadline",
-                   "hidden", "tract", "caption", "tweet", "expert"]
+                   "tract", "caption", "tweet", "expert"]
 
     for tag in soup.find_all("div"):
 
