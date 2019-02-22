@@ -8,4 +8,4 @@ APP_ID = ""
 APP_SECRET = ""
 USER_AGENT = ""
 
-SUBREDDIT = "mexico"
+SUBREDDITS = ["mexico"]
