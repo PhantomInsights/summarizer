@@ -23,8 +23,6 @@ plumasatomicas.com
 regeneracion.mx
 mvsnoticias.com
 publimetro.com.mx
-wikihow.com
-discountflights.com.mx
 themexico.news
 aristeguinoticias.com
 pulsoslp.com.mx
@@ -39,7 +37,6 @@ xeu.mx
 xevt.com
 24-horas.mx
 politico.mx
-bitso.com
 festivosmexico.com.mx
 lavozdechile.com
 noticiaslapaz.com
@@ -49,13 +46,11 @@ chalenoticias.mx
 breaking.com.mx
 miamiherald.com
 economiahoy.mx
-all-recipes.us
 argumentopolitico.com
 elfinanciero.com.mx
 reporteroshoy.mx
 vanguardia.com.mx
 laopcion.com.mx
-goo.gl
 elexpres.com
 elindependientedehidalgo.com.mx
 canalsonora.com
@@ -164,8 +159,6 @@ notisistema.com
 reliefweb.int
 lavozdeperu.com
 abcnoticias.mx
-spotify.com
-reuters.com
 itam.mx
 jornada.com.mx
 parametria.com.mx
@@ -206,3 +199,4 @@ fayerwayer.com
 horizontal.mx
 wradio.com.mx
 diariodecolima.com
+noticiaszmg.com
