@@ -11,8 +11,9 @@ import config
 import summary
 
 
-# We don't reply to posts which have a very small reduction.
+# We don't reply to posts which have a very small or very high reduction.
 MINIMUM_REDUCTION_THRESHOLD = 20
+MAXIMUM_REDUCTION_THRESHOLD = 65
 
 # We don't process articles smaller than this.
 ARTICLE_MINIMUM_LENGTH = 650
@@ -23,8 +24,8 @@ WHITELIST_FILE = "./whitelist.txt"
 ERROR_LOG = "./error.log"
 
 # Header and Footer templates.
-HEADER = """### {} \n\nReducido en un {:.2f}%\n\n*****\n\n"""
-FOOTER = """*****\n\n*^Este ^bot ^solo ^responde ^cuando ^logra ^resumir ^en ^un ^mínimo ^del ^20%. ^Este ^bot ^se ^encuentra ^en ^fase ^de ^pruebas, ^tus ^sugerencias ^y ^comentarios ^son ^bienvenidos. ​*\n\n[Nota Original]({}) | [FAQ](https://redd.it/arkxlg) | [GitHub](https://git.io/fhQkC) | {}"""
+HEADER = """### {} \n\n[Nota Original]({}) | Reducido en un {:.2f}%\n\n*****\n\n"""
+FOOTER = """*****\n\n*^Este ^bot ^solo ^responde ^cuando ^logra ^resumir ^en ^un ^mínimo ^del ^20%. ^Este ^bot ^se ^encuentra ^en ^fase ^de ^pruebas, ^tus ^sugerencias ^y ^comentarios ^son ^bienvenidos. ​*\n\n[FAQ](https://redd.it/arkxlg) | [GitHub](https://git.io/fhQkC) | {}"""
 
 
 def load_whitelist():
@@ -98,42 +99,45 @@ def init():
     processed_posts = load_log()
     whitelist = load_whitelist()
 
-    for submission in reddit.subreddit(config.SUBREDDIT).new():
+    for subreddit in config.SUBREDDITS:
 
-        if submission.id not in processed_posts:
+        for submission in reddit.subreddit(subreddit).new():
 
-            ext = tldextract.extract(submission.url)
-            domain = "{}.{}".format(ext.domain, ext.suffix)
+            if submission.id not in processed_posts:
 
-            if domain in whitelist:
+                ext = tldextract.extract(submission.url)
+                domain = "{}.{}".format(ext.domain, ext.suffix)
 
-                try:
-                    article, title = extract_article_from_url(submission.url)
-                    summary_dict = summary.get_summary(article, title)
-                except Exception as e:
-                    log_error("{},{}".format(submission.url, e))
-                    update_log(submission.id)
-                    print("Failed:", submission.id)
-                    continue
+                if domain in whitelist:
 
-                post_body = ""
+                    try:
+                        article, title = extract_article_from_url(
+                            submission.url)
+                        summary_dict = summary.get_summary(article, title)
+                    except Exception as e:
+                        log_error("{},{}".format(submission.url, e))
+                        update_log(submission.id)
+                        print("Failed:", submission.id)
+                        continue
 
-                for sentence in summary_dict["top_sentences"]:
-                    post_body += """> {}\n\n""".format(sentence)
+                    post_body = ""
 
-                top_words = ""
+                    for sentence in summary_dict["top_sentences"]:
+                        post_body += """> {}\n\n""".format(sentence)
 
-                for index, word in enumerate(summary_dict["top_words"]):
-                    top_words += "{}^#{} ".format(word, index+1)
+                    top_words = ""
 
-                post_message = HEADER.format(
-                    summary_dict["title"], summary_dict["reduction"]) + post_body + FOOTER.format(submission.url, top_words)
+                    for index, word in enumerate(summary_dict["top_words"]):
+                        top_words += "{}^#{} ".format(word, index+1)
 
-                # To reduce low quality submissions, we only process those that made a meaningful summary.
-                if summary_dict["reduction"] >= MINIMUM_REDUCTION_THRESHOLD:
-                    reddit.submission(submission).reply(post_message)
-                    update_log(submission.id)
-                    print("Replied to:", submission.id)
+                    post_message = HEADER.format(
+                        summary_dict["title"], submission.url, summary_dict["reduction"]) + post_body + FOOTER.format(top_words)
+
+                    # To reduce low quality submissions, we only process those that made a meaningful summary.
+                    if summary_dict["reduction"] >= MINIMUM_REDUCTION_THRESHOLD and summary_dict["reduction"] <= MAXIMUM_REDUCTION_THRESHOLD:
+                        reddit.submission(submission).reply(post_message)
+                        update_log(submission.id)
+                        print("Replied to:", submission.id)
 
 
 def extract_article_from_url(url):
