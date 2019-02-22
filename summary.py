@@ -30,7 +30,7 @@ COMMON_WORDS = [
     " Son ", " Se ", " Redacción ", " Pero ", " Cual ", " Esto ", " Uno ", " Dos ", " Tres ", " Donde ",
     " Cuatro ", " Cinco ", " Seis ", " Siete ", " Ocho ", " Nueve ", " Diez ", " Cien ", " Mil ", " Sé ",
     " Miles ", " Cientos ", " Millones ", " Tras ", " Pues ", " Vale ", " Entre ", " Contra ", " Me ",
-    " Ni ", " Nos ", " Eso ", " Qué ", " Mi "
+    " Ni ", " Nos ", " Eso ", " Qué ", " Mi ", " También ", " Han ", " Ya ", " Esta "
 ]
 
 # These words increase the score of a sentence. They don't require whitespaces around them.
