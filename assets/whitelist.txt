@@ -200,3 +200,4 @@ horizontal.mx
 wradio.com.mx
 diariodecolima.com
 noticiaszmg.com
+elmanana.com
