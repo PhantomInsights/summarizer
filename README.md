@@ -18,6 +18,7 @@ This project uses the following Python libraries
 * `BeautifulSoup` : Used for extracting the article text.
 * `html5lib` : This parser got better compatibility when used with `BeautifulSoup`.
 * `tldextract` : Used to extract the domain from an url.
+* `wordcloud` : Used to create word clouds with the article text.
 
 After installing the `NLTK` library you must run the following command to install the tokenizers.
 
@@ -31,7 +32,7 @@ It first detects if the post hasn't already been processed and then checks if th
 
 If the post and its url passes both checks then a process of web scraping is applied to the url, this is where things start getting interesting.
 
-Before replying to the original submission it checks the percentage of the reduction achieved, if it's too low it skips it and moves to the next submission.
+Before replying to the original submission it checks the percentage of the reduction achieved, if it's too low or too high it skips it and moves to the next submission.
 
 ## Web Scraper
 
@@ -162,15 +163,23 @@ When extracting the text from the article we usually get a lot of whitespaces, m
 
 We split the text by that character, then strip all whitespaces and join it again. This is not strictly required to do but helps a lot while debugging the whole process.
 
-### Remove Common Words
+### Remove Common and Stop Words
 
-At the top of the script we have a list with the most used Spanish words. My personal preference was to hard code them in title form (Your, Mine, His, Theirs), then add a copy of each word in uppercase and lowercase. Which means the list will be 3 times the original size.
+At the top of the script we have a list with the most used Spanish words. My personal preference was to hard code them in lowercase form.
+
+I also loaded a list of the most common stop words in Spanish.
+
+Then I added a copy of each word in uppercase and title form. Which means the list will be 3 times the original size.
 
 ```python
+with open("./assets/stopwords-es.txt", "r", encoding="utf-8") as temp_file:
+    for word in temp_file.read().splitlines():
+        COMMON_WORDS.append(" {} ".format(word))
+
 extra_words = list()
 
 for word in COMMON_WORDS:
-    extra_words.append(word.lower())
+    extra_words.append(word.title())
     extra_words.append(word.upper())
 
 COMMON_WORDS.extend(extra_words)
@@ -280,6 +289,18 @@ return [sentence for index, sentence in sorted(top_sentences)]
 ```
 
 At the end we use a list comprehension to return only the sentences which are already sorted in chronological order.
+
+### Word Cloud
+
+Just for fun I added a word cloud to each article. To do so I used the `wordcloud` library. This library is very easy to use, you only require to declare a `WordCloud` object and use the `generate` method.
+
+```python
+wc = wordcloud.WordCloud() # See cloud.py for full parameters.
+wc.generate(prepared_article)
+wc.to_file("./temp.png")
+```
+
+After generating the image I uploaded it to `Imgur`, got back the url link and added it to the `Markdown` message.
 
 ## Conclusion
 
