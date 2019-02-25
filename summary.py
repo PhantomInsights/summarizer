@@ -5,6 +5,9 @@ from collections import Counter
 
 from nltk import tokenize
 
+# The stop words file.
+STOPWORDS_FILE = "./assets/stopwords-es.txt"
+
 # The number of sentences we need.
 NUMBER_OF_SENTENCES = 5
 
@@ -24,26 +27,31 @@ LINE_LENGTH_THRESHOLD = 150
 # Otherwise it will take into account partial words.
 COMMON_WORDS = [
     ",", "|", "-", "‘", "’", ";", "(", ")", ".", ":", "¿", "?", '“', '”', '"', "'", "•",
-    " Un ", " Una ", " El ", " La ", " Los ", " Las ", " Y ", " A ", " O ", " Si ", " No ", " Su ",
-    " En ", " Foto ", " Video ", " De ", " Va ", " Como ", " Cuando ", " Que ", " Por ", " Ser ", " Ha ",
-    " Para ", " Sus ", " Más ", " Del ", " Es ", " Al ", " Lo ", " Le ", " Les ", " Con ", " Sino ",
-    " Son ", " Se ", " Redacción ", " Pero ", " Cual ", " Esto ", " Uno ", " Dos ", " Tres ", " Donde ",
-    " Cuatro ", " Cinco ", " Seis ", " Siete ", " Ocho ", " Nueve ", " Diez ", " Cien ", " Mil ", " Sé ",
-    " Miles ", " Cientos ", " Millones ", " Tras ", " Pues ", " Vale ", " Entre ", " Contra ", " Me ",
-    " Ni ", " Nos ", " Eso ", " Qué ", " Mi ", " También ", " Han ", " Ya ", " Esta "
+    " foto ", " video ", " redacción ", " nueve ", " diez ", " cien ", " mil ", " miles ",
+    " cientos ", " millones ", " vale "
 ]
 
 # These words increase the score of a sentence. They don't require whitespaces around them.
-FINANCIAL_WORDS = ["$", "€", "£", "pesos", "dólar", "libras", "euros", "mdp", "mdd"]
+FINANCIAL_WORDS = ["$", "€", "£", "pesos",
+                   "dólar", "libras", "euros", "mdp", "mdd"]
 
 
 def add_extra_words():
-    """Adds the lowercase and uppercase version of all words to COMMON_WORDS."""
+    """Adds the title and uppercase version of all words to COMMON_WORDS.
+    
+    We parse a local copy of stop words downloaded from the following repository:
+
+    https://github.com/stopwords-iso/stopwords-es    
+    """
+
+    with open(STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
+        for word in temp_file.read().splitlines():
+            COMMON_WORDS.append(" {} ".format(word))
 
     extra_words = list()
 
     for word in COMMON_WORDS:
-        extra_words.append(word.lower())
+        extra_words.append(word.title())
         extra_words.append(word.upper())
 
     COMMON_WORDS.extend(extra_words)
@@ -101,7 +109,8 @@ def get_summary(article, title=""):
         "title": title,
         "top_words": get_top_words(scored_words),
         "top_sentences": top_sentences,
-        "reduction": reduction
+        "reduction": reduction,
+        "article_words": prepared_article
     }
 
     return summary_dict
@@ -264,7 +273,7 @@ def score_line(line, scored_words):
             is_financial = True
             break
 
-    if is_financial:    
+    if is_financial:
         temp_score *= FINANCIAL_SENTENCE_MULTIPLIER
 
     return temp_score
