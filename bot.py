@@ -7,25 +7,25 @@ import requests
 import tldextract
 from bs4 import BeautifulSoup
 
+import cloud
 import config
 import summary
 
-
 # We don't reply to posts which have a very small or very high reduction.
 MINIMUM_REDUCTION_THRESHOLD = 20
-MAXIMUM_REDUCTION_THRESHOLD = 65
+MAXIMUM_REDUCTION_THRESHOLD = 68
 
 # We don't process articles smaller than this.
 ARTICLE_MINIMUM_LENGTH = 650
 
 # File locations
 POSTS_LOG = "./processed_posts.txt"
-WHITELIST_FILE = "./whitelist.txt"
+WHITELIST_FILE = "./assets/whitelist.txt"
 ERROR_LOG = "./error.log"
 
 # Header and Footer templates.
 HEADER = """### {} \n\n[Nota Original]({}) | Reducido en un {:.2f}%\n\n*****\n\n"""
-FOOTER = """*****\n\n*^Este ^bot ^solo ^responde ^cuando ^logra ^resumir ^en ^un ^mínimo ^del ^20%. ^Este ^bot ^se ^encuentra ^en ^fase ^de ^pruebas, ^tus ^sugerencias ^y ^comentarios ^son ^bienvenidos. ​*\n\n[FAQ](https://redd.it/arkxlg) | [GitHub](https://git.io/fhQkC) | {}"""
+FOOTER = """*****\n\n*^Este ^bot ^solo ^responde ^cuando ^logra ^resumir ^en ^un ^mínimo ^del ^20%. ^Tus ^reportes, ^sugerencias ^y ^comentarios ^son ^bienvenidos. ​*\n\n[FAQ](https://redd.it/arkxlg) | [GitHub](https://git.io/fhQkC) | [☁️]({}) | {}"""
 
 
 def load_whitelist():
@@ -105,36 +105,42 @@ def init():
 
             if submission.id not in processed_posts:
 
-                ext = tldextract.extract(submission.url)
+                clean_url = submission.url.replace("amp.", "")
+                ext = tldextract.extract(clean_url)
                 domain = "{}.{}".format(ext.domain, ext.suffix)
 
                 if domain in whitelist:
 
                     try:
-                        article, title = extract_article_from_url(
-                            submission.url)
+                        article, title = extract_article_from_url(clean_url)
                         summary_dict = summary.get_summary(article, title)
                     except Exception as e:
-                        log_error("{},{}".format(submission.url, e))
+                        log_error("{},{}".format(clean_url, e))
                         update_log(submission.id)
                         print("Failed:", submission.id)
                         continue
 
-                    post_body = ""
-
-                    for sentence in summary_dict["top_sentences"]:
-                        post_body += """> {}\n\n""".format(sentence)
-
-                    top_words = ""
-
-                    for index, word in enumerate(summary_dict["top_words"]):
-                        top_words += "{}^#{} ".format(word, index+1)
-
-                    post_message = HEADER.format(
-                        summary_dict["title"], submission.url, summary_dict["reduction"]) + post_body + FOOTER.format(top_words)
-
                     # To reduce low quality submissions, we only process those that made a meaningful summary.
                     if summary_dict["reduction"] >= MINIMUM_REDUCTION_THRESHOLD and summary_dict["reduction"] <= MAXIMUM_REDUCTION_THRESHOLD:
+
+                        # Create a wordcloud, upload it to Imgur and get back the url.
+                        image_url = cloud.generate_word_cloud(
+                            summary_dict["article_words"])
+
+                        # We start creating the comment body.
+                        post_body = ""
+
+                        for sentence in summary_dict["top_sentences"]:
+                            post_body += """> {}\n\n""".format(sentence)
+
+                        top_words = ""
+
+                        for index, word in enumerate(summary_dict["top_words"]):
+                            top_words += "{}^#{} ".format(word, index+1)
+
+                        post_message = HEADER.format(
+                            summary_dict["title"], submission.url, summary_dict["reduction"]) + post_body + FOOTER.format(image_url, top_words)
+
                         reddit.submission(submission).reply(post_message)
                         update_log(submission.id)
                         print("Replied to:", submission.id)
@@ -155,9 +161,9 @@ def extract_article_from_url(url):
 
     """
 
-    headers = {"User-Agent": "Summarizer v0.3"}
+    headers = {"User-Agent": "Summarizer v1.0"}
 
-    with requests.get(url, headers=headers) as response:
+    with requests.get(url, headers=headers, timeout=10) as response:
 
         # Sometimes Requests makes an incorrect guess, we force it to use utf-8
         if response.encoding == "ISO-8859-1":
@@ -176,7 +182,7 @@ def extract_article_from_url(url):
 
     # These class names/ids are known to add noise or duplicate text to the article.
     noisy_names = ["image", "img", "video", "subheadline",
-                   "tract", "caption", "tweet", "expert"]
+                   "pie", "tract", "caption", "tweet", "expert"]
 
     for tag in soup.find_all("div"):
 
