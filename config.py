@@ -9,3 +9,5 @@ APP_SECRET = ""
 USER_AGENT = ""
 
 SUBREDDITS = ["mexico"]
+
+IMGUR_CLIENT_ID = ""
