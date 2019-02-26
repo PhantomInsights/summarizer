@@ -302,6 +302,8 @@ wc.to_file("./temp.png")
 
 After generating the image I uploaded it to `Imgur`, got back the url link and added it to the `Markdown` message.
 
+![Word cloud example](cloud_example.png)
+
 ## Conclusion
 
 This was a very fun and interesting project to work on. I may have reinvented the wheel but at least I learned a few cool things.
