@@ -2,6 +2,7 @@
 Inits the summary bot. It starts a Reddit instance using PRAW, gets the latest posts
 and filters those who have already been processed.
 """
+
 import praw
 import requests
 import tldextract
@@ -144,6 +145,9 @@ def init():
                         reddit.submission(submission).reply(post_message)
                         update_log(submission.id)
                         print("Replied to:", submission.id)
+                    else:
+                        update_log(submission.id)
+                        print("Skipped:", submission.id)
 
 
 def extract_article_from_url(url):

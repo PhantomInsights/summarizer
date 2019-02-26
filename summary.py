@@ -1,6 +1,7 @@
 """
 This script extracts and ranks the sentences and words of an article.
 """
+
 from collections import Counter
 
 from nltk import tokenize

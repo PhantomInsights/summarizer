@@ -1,6 +1,7 @@
 """
 This script generates a word cloud from the article words. Uploads it to Imgur and returns back the url.
 """
+
 import os
 import random
 
@@ -34,7 +35,7 @@ def generate_word_cloud(text):
         The url generated from the Imgur API.
     """
 
-    wc = wordcloud.WordCloud(background_color="#333333",
+    wc = wordcloud.WordCloud(background_color="#222222",
                              max_words=2000,
                              mask=mask,
                              contour_width=2,
