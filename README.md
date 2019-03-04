@@ -1,6 +1,6 @@
 # Article Summarizer
 
-This project implements a custom algorithm to extract the most important sentences and keywords from Spanish news articles.
+This project implements a custom algorithm to extract the most important sentences and keywords from Spanish and English news articles.
 
 It was fully developed in `Python` and it is inspired by similar projects seen on `Reddit` news subreddits that use the term frequency–inverse document frequency (`tf–idf`).
 
@@ -32,11 +32,11 @@ It first detects if the post hasn't already been processed and then checks if th
 
 If the post and its url passes both checks then a process of web scraping is applied to the url, this is where things start getting interesting.
 
-Before replying to the original submission it checks the percentage of the reduction achieved, if it's too low or too high it skips it and moves to the next submission.
+Before replying to the original post it checks the percentage of the reduction achieved, if it's too low or too high it skips it and moves to the next post.
 
 ## Web Scraper
 
-Currently in the whitelist there are already more than 100 different domains of news websites. Creating specialized web scrapers for each one is simply not feasible.
+Currently in the whitelist there are already more than 300 different websites of news articles and blogs. Creating specialized web scrapers for each one is simply not feasible.
 
 The second best thing to do is to make the scraper as accurate as possible.
 
@@ -56,11 +56,11 @@ for item in ["</p>", "</blockquote>", "</div>", "</h2>", "</h3>"]:
 soup = BeautifulSoup(html_source, "html5lib")
 ```
 
-Very few times I got encoding issues caused by an incorrect encoding guess. To avoid this issue I force Requests to decode with `utf-8`.
+Very few times I got encoding issues caused by an incorrect encoding guess. To avoid this issue I force `Requests` to decode with `utf-8`.
 
-When grabbing the text from different tags I often got the strings without separation. I implemented a little hack to add new lines to each tag that usually contains text. This improved the overall accuracy significantly.
+When extracting the text from different tags I often got the strings without separation. I implemented a little hack to add new lines to each tag that usually contains text. This significantly improved the overall accuracy of the tokenizer.
 
-My original idea was to only accept websites that used the `<article>` tag. It worked ok, but I soon realized that very few websites use it and those who use it don't use it correctly.
+My original idea was to only accept websites that used the `<article>` tag. It worked ok for the first websites I tested, but I soon realized that very few websites use it and those who use it don't use it correctly.
 
 ```python
 article = soup.find("article").text
@@ -165,16 +165,20 @@ We split the text by that character, then strip all whitespaces and join it agai
 
 ### Remove Common and Stop Words
 
-At the top of the script we have a list with the most used Spanish words. My personal preference was to hard code them in lowercase form.
+At the top of the script we declare the path of the stop words text files. These stop words will be added to a `set`, guaranteeing no duplicates.
 
-I also loaded a list of the most common stop words in Spanish.
+I also added a list with some Spanish and English words that are not stop words but they don't add anything substantial to the article. My personal preference was to hard code them in lowercase form.
 
-Then I added a copy of each word in uppercase and title form. Which means the list will be 3 times the original size.
+Then I added a copy of each word in uppercase and title form. Which means the `set` will be 3 times the original size.
 
 ```python
-with open("./assets/stopwords-es.txt", "r", encoding="utf-8") as temp_file:
+with open(ES_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
+        for word in temp_file.read().splitlines():
+            COMMON_WORDS.add(" {} ".format(word))
+
+with open(EN_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
     for word in temp_file.read().splitlines():
-        COMMON_WORDS.append(" {} ".format(word))
+        COMMON_WORDS.add(" {} ".format(word))
 
 extra_words = list()
 
@@ -182,7 +186,8 @@ for word in COMMON_WORDS:
     extra_words.append(word.title())
     extra_words.append(word.upper())
 
-COMMON_WORDS.extend(extra_words)
+for word in extra_words:
+    COMMON_WORDS.add(word)
 ```
 
 ### Scoring Words
@@ -292,7 +297,7 @@ At the end we use a list comprehension to return only the sentences which are al
 
 ### Word Cloud
 
-Just for fun I added a word cloud to each article. To do so I used the `wordcloud` library. This library is very easy to use, you only require to declare a `WordCloud` object and use the `generate` method.
+Just for fun I added a word cloud to each article. To do so I used the `wordcloud` library. This library is very easy to use, you only require to declare a `WordCloud` object and use the `generate` method with a string of text as its parameter.
 
 ```python
 wc = wordcloud.WordCloud() # See cloud.py for full parameters.
@@ -310,4 +315,8 @@ This was a very fun and interesting project to work on. I may have reinvented th
 
 I'm satisfied with the overall quality of the results and I will keep tweaking the algorithm and applying compatibility enhancements.
 
-As a side note, when testing the script I accidentally requested Tweets, Facebook posts and English written articles. All of them got acceptable outputs, but since those sites are not the target I removed them from the whitelist.
+As a side note, when testing the script I accidentally requested Tweets, Facebook posts and English written articles. All of them got acceptable outputs, but since those sites were not the target I removed them from the whitelist.
+
+After some weeks of feedback I decided to add support for the English language. This required a bit of refactoring.
+
+To make it work with other languages you will only require a text file containing all the stop words from said language and copy a few lines of code (see Remove Common and Stop Words section).
