@@ -6,8 +6,9 @@ from collections import Counter
 
 from nltk import tokenize
 
-# The stop words file.
-STOPWORDS_FILE = "./assets/stopwords-es.txt"
+# The stop words files.
+ES_STOPWORDS_FILE = "./assets/stopwords-es.txt"
+EN_STOPWORDS_FILE = "./assets/stopwords-en.txt"
 
 # The number of sentences we need.
 NUMBER_OF_SENTENCES = 5
@@ -26,28 +27,34 @@ LINE_LENGTH_THRESHOLD = 150
 
 # It is very important to add spaces on these words.
 # Otherwise it will take into account partial words.
-COMMON_WORDS = [
+COMMON_WORDS = {
     ",", "|", "-", "‘", "’", ";", "(", ")", ".", ":", "¿", "?", '“', '”', '"', "'", "•",
-    " foto ", " video ", " redacción ", " nueve ", " diez ", " cien ", " mil ", " miles ",
+    " foto ", " photo ", " video ", " redacción ", " nueve ", " diez ", " cien ", " mil ", " miles ",
     " cientos ", " millones ", " vale "
-]
+}
 
 # These words increase the score of a sentence. They don't require whitespaces around them.
-FINANCIAL_WORDS = ["$", "€", "£", "pesos",
-                   "dólar", "libras", "euros", "mdp", "mdd"]
+FINANCIAL_WORDS = ["$", "€", "£", "pesos", "dólar", "libras", "euros",
+                   "dollar", "pound", "mdp", "mdd"]
 
 
 def add_extra_words():
     """Adds the title and uppercase version of all words to COMMON_WORDS.
-    
-    We parse a local copy of stop words downloaded from the following repository:
 
-    https://github.com/stopwords-iso/stopwords-es    
+    We parse local copies of stop words downloaded from the following repositories:
+
+    https://github.com/stopwords-iso/stopwords-es
+    https://github.com/stopwords-iso/stopwords-en
+
     """
 
-    with open(STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
+    with open(ES_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
         for word in temp_file.read().splitlines():
-            COMMON_WORDS.append(" {} ".format(word))
+            COMMON_WORDS.add(" {} ".format(word))
+
+    with open(EN_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
+        for word in temp_file.read().splitlines():
+            COMMON_WORDS.add(" {} ".format(word))
 
     extra_words = list()
 
@@ -55,7 +62,8 @@ def add_extra_words():
         extra_words.append(word.title())
         extra_words.append(word.upper())
 
-    COMMON_WORDS.extend(extra_words)
+    for word in extra_words:
+        COMMON_WORDS.add(word)
 
 
 add_extra_words()
