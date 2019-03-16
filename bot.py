@@ -182,11 +182,11 @@ def extract_article_from_url(url):
     # We create a BeautifulSOup object and remove the unnecessary tags.
     soup = BeautifulSoup(html_source, "html5lib")
     [tag.extract() for tag in soup.find_all(
-        ["script", "img", "ul", "time", "h1", "h2", "h3", "iframe", "style", "form", "footer", "figcaption"])]
+        ["script", "img", "ol", "ul", "time", "h1", "h2", "h3", "iframe", "style", "form", "footer", "figcaption"])]
 
     # These class names/ids are known to add noise or duplicate text to the article.
     noisy_names = ["image", "img", "video", "subheadline",
-                   "pie", "tract", "caption", "tweet", "expert"]
+                   "pie", "tract", "caption", "tweet", "expert", "previous", "next", "rightbar"]
 
     for tag in soup.find_all("div"):
 
