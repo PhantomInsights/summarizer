@@ -286,7 +286,7 @@ for score, index, sentence in sorted(scored_sentences, reverse=True):
     # When the article is too small the sentences may come empty.
     if len(sentence) >= 3:
 
-        # We clean the sentence and its index so we can sort in chronological order.
+        # We append the sentence and its index so we can sort in chronological order.
         top_sentences.append([index, sentence])
         counter += 1
 
