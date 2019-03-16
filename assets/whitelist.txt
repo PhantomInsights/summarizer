@@ -277,7 +277,6 @@ talkingpointsmemo.com
 livemint.com
 sabq.org
 veteranstoday.com
-youtube.com
 isibcase.ir
 dailytimes.com.pk
 thedailybeast.com
@@ -349,3 +348,5 @@ newsdaily.today
 firstpost.com
 morningstaronline.co.uk
 ntrguadalajara.com
+nationalgeographic.com
+cronica.com.mx
