@@ -176,7 +176,7 @@ def extract_article_from_url(url):
         html_source = response.text
 
     # Very often the text between tags comes together, we add an artificial newline to each common tag.
-    for item in ["</p>", "</blockquote>", "</div>", "</h3>"]:
+    for item in ["</p>", "</blockquote>", "</div>", "</h3>", "<br>"]:
         html_source = html_source.replace(item, item+"\n")
 
     # We create a BeautifulSOup object and remove the unnecessary tags.
@@ -185,7 +185,7 @@ def extract_article_from_url(url):
         ["script", "img", "ol", "ul", "time", "h1", "h2", "h3", "iframe", "style", "form", "footer", "figcaption"])]
 
     # These class names/ids are known to add noise or duplicate text to the article.
-    noisy_names = ["image", "img", "video", "subheadline",
+    noisy_names = ["image", "img", "video", "subheadline", "editor", "fondea", "resumen",
                    "pie", "tract", "caption", "tweet", "expert", "previous", "next", "rightbar"]
 
     for tag in soup.find_all("div"):
