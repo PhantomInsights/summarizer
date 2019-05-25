@@ -173,8 +173,8 @@ Then I added a copy of each word in uppercase and title form. Which means the `s
 
 ```python
 with open(ES_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
-        for word in temp_file.read().splitlines():
-            COMMON_WORDS.add(" {} ".format(word))
+    for word in temp_file.read().splitlines():
+        COMMON_WORDS.add(" {} ".format(word))
 
 with open(EN_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
     for word in temp_file.read().splitlines():
@@ -320,3 +320,5 @@ As a side note, when testing the script I accidentally requested Tweets, Faceboo
 After some weeks of feedback I decided to add support for the English language. This required a bit of refactoring.
 
 To make it work with other languages you will only require a text file containing all the stop words from said language and copy a few lines of code (see Remove Common and Stop Words section).
+
+[![Become a Patron!](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/bePatron?u=20521425)
