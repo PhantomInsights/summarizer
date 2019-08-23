@@ -102,7 +102,7 @@ def init():
 
     for subreddit in config.SUBREDDITS:
 
-        for submission in reddit.subreddit(subreddit).new():
+        for submission in reddit.subreddit(subreddit).new(limit=50):
 
             if submission.id not in processed_posts:
 
@@ -187,7 +187,8 @@ def extract_article_from_url(url):
 
     # These class names/ids are known to add noise or duplicate text to the article.
     noisy_names = ["image", "img", "video", "subheadline", "editor", "fondea", "resumen", "tags", "sidebar", "comment",
-                   "entry-title", "breaking_content", "pie", "tract", "caption", "tweet", "expert", "previous", "next", "rightbar"]
+                   "entry-title", "breaking_content", "pie", "tract", "caption", "tweet", "expert", "previous", "next",
+                   "compartir", "rightbar", "mas"]
 
     for tag in soup.find_all("div"):
 
