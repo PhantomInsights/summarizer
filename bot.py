@@ -188,7 +188,7 @@ def extract_article_from_url(url):
     # These class names/ids are known to add noise or duplicate text to the article.
     noisy_names = ["image", "img", "video", "subheadline", "editor", "fondea", "resumen", "tags", "sidebar", "comment",
                    "entry-title", "breaking_content", "pie", "tract", "caption", "tweet", "expert", "previous", "next",
-                   "compartir", "rightbar", "mas"]
+                   "compartir", "rightbar", "mas", "copyright"]
 
     for tag in soup.find_all("div"):
 
