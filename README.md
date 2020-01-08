@@ -26,7 +26,7 @@ This project uses the following Python libraries
 
 After installing the `spaCy` library you must install a language model to be able to tokenize the article.
 
-For Spanish you can run this one:
+For `Spanish` you can run this one:
 
 `python -m spacy download es_core_news_sm"`
 
@@ -200,7 +200,7 @@ This algorithm was designed to work primarily on Spanish written articles. It co
 4. Split the original article into sentences and score each sentence using the scores from the words.
 5. Take the top 5 sentences and top 5 words and return them in chronological order.
 
-Befor starting out we need to initialize the `spaCy` library.
+Before starting out we need to initialize the `spaCy` library.
 
 ```python
 NLP = spacy.load("es_core_news_sm")
@@ -278,7 +278,7 @@ for word in scored_words:
 
 Now that we have the final scores for each word it is time to score each sentence from the article.
 
-To do this we first need to split the article into sentences. I tried various approaches, including `RegEx` but the one that worked best was the `spacY` library.
+To do this we first need to split the article into sentences. I tried various approaches, including `RegEx` but the one that worked best was the `spaCy` library.
 
 We will iterate again over the `doc` object we defined in the previous step, but this time we will iterate over its `sents` property.
 
