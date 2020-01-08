@@ -246,8 +246,8 @@ def score_line(line, scored_words):
 
     Parameters
     ----------
-    line : str
-        A sentence from the article.
+    line : spacy.tokens.span.Span
+        A tokenized sentence from the article.
 
     scored_words : Counter
         A dictionary of all the words from the article with their number of ocurrences.
@@ -259,7 +259,7 @@ def score_line(line, scored_words):
 
     """
 
-    # We then apply the same clean algorithm. Removing common words.
+    # We remove the common words.
     cleaned_line = [
         token.text for token in line if token.text not in COMMON_WORDS]
 

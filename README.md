@@ -4,15 +4,19 @@ This project implements a custom algorithm to extract the most important sentenc
 
 It was fully developed in `Python` and it is inspired by similar projects seen on `Reddit` news subreddits that use the term frequency–inverse document frequency (`tf–idf`).
 
-The 2 most important files are:
+The 3 most important files are:
+
+* `scraper.py` : A Python script that performs web scraping on a given HTML source, it extracts the article title, date and body.
 
 * `summary.py` : A Python script that applies a custom algorithm to a string of text and extracts the top ranked sentences and words.
 
-* `bot.py` : A Reddit bot that connects to a subreddit and gets the latest posts, then it web scrapes them, extracts the text and passes it to the first script.
+* `bot.py` : A Reddit bot that checks a subreddit for its latest submissions. It manages a list of already processed submissions to avoid duplicates.
+
+## Requirements
 
 This project uses the following Python libraries
 
-* `NLTK` : Used to tokenize the article into sentences.
+* `spaCy` : Used to tokenize the article into sentences and words.
 * `PRAW` : Makes the use of the Reddit API very easy.
 * `Requests` : To perform HTTP `get` requests to the articles urls.
 * `BeautifulSoup` : Used for extracting the article text.
@@ -20,19 +24,23 @@ This project uses the following Python libraries
 * `tldextract` : Used to extract the domain from an url.
 * `wordcloud` : Used to create word clouds with the article text.
 
-After installing the `NLTK` library you must run the following command to install the tokenizers.
+After installing the `spaCy` library you must install a language model to be able to tokenize the article.
 
-`python -c "import nltk; nltk.download('punkt')"`
+For Spanish you can run this one:
+
+`python -m spacy download es_core_news_sm"`
+
+For other languages please check the following link: https://spacy.io/usage/models
 
 ## Reddit Bot
 
-The bot is simple in nature, it uses the `PRAW` library which is very straightforward to use. The bot polls a subreddit every 10 minutes to get its latest posts.
+The bot is simple in nature, it uses the `PRAW` library which is very straightforward to use. The bot polls a subreddit every 10 minutes to get its latest submissions.
 
-It first detects if the post hasn't already been processed and then checks if the post url is in the whitelist. This whitelist is currently curated by myself.
+It first detects if the submission hasn't already been processed and then checks if the submission url is in the whitelist. This whitelist is currently curated by myself.
 
 If the post and its url passes both checks then a process of web scraping is applied to the url, this is where things start getting interesting.
 
-Before replying to the original post it checks the percentage of the reduction achieved, if it's too low or too high it skips it and moves to the next post.
+Before replying to the original submission it checks the percentage of the reduction achieved, if it's too low or too high it skips it and moves to the next submission.
 
 ## Web Scraper
 
@@ -57,6 +65,41 @@ soup = BeautifulSoup(html_source, "html5lib")
 ```
 
 Very few times I got encoding issues caused by an incorrect encoding guess. To avoid this issue I force `Requests` to decode with `utf-8`.
+
+Now that we have our article parsed into a `soup` object we will start by extracting the title and published time.
+
+I used similar methods to extract both values, I first check the most common tags and fallback to the next common alternatives.
+
+Not all websites expose their published date, we sometimes end with an empty string.
+
+```python
+article_title = soup.find("title").text.replace("\n", " ").strip()
+
+# If our title is too short we fallback to the first h1 tag.
+if len(article_title) <= 5:
+    article_title = soup.find("h1").text.replace("\n", " ").strip()
+
+article_date = ""
+
+# We look for the first meta tag that has the word 'time' in it.
+for item in soup.find_all("meta"):
+
+    if "time" in item.get("property", ""):
+
+        clean_date = item["content"].split("+")[0].replace("Z", "")
+        
+        # Use your preferred time formatting.
+        article_date = "{:%d-%m-%Y a las %H:%M:%S}".format(
+            datetime.fromisoformat(clean_date))
+        break
+
+# If we didn't find any meta tag with a datetime we look for a 'time' tag.
+if len(article_date) <= 5:
+    try:
+        article_date = soup.find("time").text.strip()
+    except:
+        pass
+```
 
 When extracting the text from different tags I often got the strings without separation. I implemented a little hack to add new lines to each tag that usually contains text. This significantly improved the overall accuracy of the tokenizer.
 
@@ -157,6 +200,14 @@ This algorithm was designed to work primarily on Spanish written articles. It co
 4. Split the original article into sentences and score each sentence using the scores from the words.
 5. Take the top 5 sentences and top 5 words and return them in chronological order.
 
+Befor starting out we need to initialize the `spaCy` library.
+
+```python
+NLP = spacy.load("es_core_news_sm")
+```
+
+That line of code will load the `Spanish` model which I use the most. If you are using another language please refer to the `Requirements` section so you know how to install the appropriate model.
+
 ### Clean the Article
 
 When extracting the text from the article we usually get a lot of whitespaces, mostly from line breaks (`\n`).
@@ -174,11 +225,11 @@ Then I added a copy of each word in uppercase and title form. Which means the `s
 ```python
 with open(ES_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
     for word in temp_file.read().splitlines():
-        COMMON_WORDS.add(" {} ".format(word))
+        COMMON_WORDS.add("{}".format(word))
 
 with open(EN_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
     for word in temp_file.read().splitlines():
-        COMMON_WORDS.add(" {} ".format(word))
+        COMMON_WORDS.add("{}".format(word))
 
 extra_words = list()
 
@@ -192,6 +243,14 @@ for word in extra_words:
 
 ### Scoring Words
 
+Before starting tokenizing our words we must first pass our cleaned article into the `NLP` pipeline, this is done with one line of code.
+
+```python
+doc = NLP(cleaned_article)
+```
+
+This `doc` object contains several iterators, the 2 we will use are `tokens` and `sents` (sentences).
+
 At this point I added a personal touch to the algorithm. First I made a copy of the article and then removed all common words from it.
 
 Afterwards I used a `collections.Counter` object to do the initial scoring.
@@ -201,11 +260,10 @@ Then I applied a multiplier bonus to words that start in uppercase and are equal
 Finally I set to zero the score for all words that are actually numbers.
 
 ```python
-for item in COMMON_WORDS:
-    prepared_article = prepared_article.replace(item, " ")
+words_of_interest = [
+        token.text for token in doc if token.text not in COMMON_WORDS]
 
-scored_words = Counter(prepared_article.split(" "))
-del scored_words[""]
+scored_words = Counter(words_of_interest)
 
 for word in scored_words:
 
@@ -220,16 +278,23 @@ for word in scored_words:
 
 Now that we have the final scores for each word it is time to score each sentence from the article.
 
-To do this we first need to split the article into sentences. I tried various approaches, including `RegEx` but the one that worked best was the `NLTK` library.
+To do this we first need to split the article into sentences. I tried various approaches, including `RegEx` but the one that worked best was the `spacY` library.
+
+We will iterate again over the `doc` object we defined in the previous step, but this time we will iterate over its `sents` property.
+
+Something to note is that we create a list of sentence `tokens` and inside those tokens we can retrieve the sentences text by accessing their `text` property.
 
 ```python
+article_sentences = [sent for sent in doc.sents]
+
 scored_sentences = list()
 
-for index, line in enumerate(tokenize.sent_tokenize(cleaned_article)):
-    
+or index, sent in enumerate(article_sentences):
+
     # In some edge cases we have duplicated sentences, we make sure that doesn't happen.
-    if line not in [line for score, index, line in scored_sentences]:
-        scored_sentences.append([score_line(line, scored_words), index, line])
+    if sent.text not in [sent for score, index, sent in scored_sentences]:
+        scored_sentences.append(
+            [score_line(sent, scored_words), index, sent.text])
 ```
 
 `scored_sentences` is a list of lists. Each inner list contains 3 values. The sentence score, its index and the sentence itself. Those values will be used in the next step.
@@ -239,29 +304,23 @@ The code below shows how the lines are scored.
 ```python
 def score_line(line, scored_words):
 
-    temp_line = line[:]
-
-    # We then apply the same clean algorithm. Removing common words.
-    for word in COMMON_WORDS:
-        temp_line = temp_line.replace(word, " ")
+    # We remove the common words.
+    cleaned_line = [
+        token.text for token in line if token.text not in COMMON_WORDS]
 
     # We now sum the total number of ocurrences for all words.
     temp_score = 0
 
-    for word in temp_line.split(" "):
+    for word in cleaned_line:
         temp_score += scored_words[word]
 
     # We apply a bonus score to sentences that contain financial information.
-    line_lowercase = line.lower()
-    is_financial = False
+    line_lowercase = line.text.lower()
 
     for word in FINANCIAL_WORDS:
         if word in line_lowercase:
-            is_financial = True
+            temp_score *= 1.5
             break
-
-    if is_financial:    
-        temp_score *= 1.5
 
     return temp_score  
 ```
