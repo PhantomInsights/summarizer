@@ -1,10 +1,12 @@
 """
 This script extracts and ranks the sentences and words of an article.
+
+IT is inspired by the tf-idf algorithm.
 """
 
 from collections import Counter
 
-from nltk import tokenize
+import spacy
 
 # The stop words files.
 ES_STOPWORDS_FILE = "./assets/stopwords-es.txt"
@@ -28,9 +30,9 @@ LINE_LENGTH_THRESHOLD = 150
 # It is very important to add spaces on these words.
 # Otherwise it will take into account partial words.
 COMMON_WORDS = {
-    ",", "|", "-", "‘", "’", ";", "(", ")", ".", ":", "¿", "?", '“', '”', '"', "'", "•",
-    " foto ", " photo ", " video ", " redacción ", " nueve ", " diez ", " cien ", " mil ", " miles ",
-    " cientos ", " millones ", " vale "
+    " ", "  ", "\xa0", "#", ",", "|", "-", "‘", "’", ";", "(", ")", ".", ":", "¿", "?", '“',
+    '”', '"', "'", "%", "•", "«", "»", "foto", "photo", "video", "redacción", "nueve", "diez", "cien",
+    "mil", "miles", "ciento", "cientos", "millones", "vale"
 }
 
 # These words increase the score of a sentence. They don't require whitespaces around them.
@@ -38,23 +40,26 @@ FINANCIAL_WORDS = ["$", "€", "£", "pesos", "dólar", "libras", "euros",
                    "dollar", "pound", "mdp", "mdd"]
 
 
+# Don't forget to specify the correct model for your language.
+NLP = spacy.load("es_core_news_sm")
+
+
 def add_extra_words():
-    """Adds the title and uppercase version of all words to COMMON_WORDS.
+    """Adds the title and uppercase forms of all words to COMMON_WORDS.
 
     We parse local copies of stop words downloaded from the following repositories:
 
     https://github.com/stopwords-iso/stopwords-es
     https://github.com/stopwords-iso/stopwords-en
-
     """
 
     with open(ES_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
         for word in temp_file.read().splitlines():
-            COMMON_WORDS.add(" {} ".format(word))
+            COMMON_WORDS.add("{}".format(word))
 
     with open(EN_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
         for word in temp_file.read().splitlines():
-            COMMON_WORDS.add(" {} ".format(word))
+            COMMON_WORDS.add("{}".format(word))
 
     extra_words = list()
 
@@ -69,7 +74,7 @@ def add_extra_words():
 add_extra_words()
 
 
-def get_summary(article, title=""):
+def get_summary(article):
     """Generates the top words and sentences from the article text.
 
     Parameters
@@ -77,28 +82,26 @@ def get_summary(article, title=""):
     article : str
         The article text.
 
-    title : str
-        The article title.
-
     Returns
     -------
     dict
-        A dict containing the title of the article, top words and the top scored sentences.
+        A dict containing the title of the article, reduction percentage, top words and the top scored sentences.
 
     """
 
     # Now we prepare the article for scoring.
     cleaned_article = clean_article(article)
-    prepared_article = "  " + cleaned_article
 
-    for item in COMMON_WORDS:
-        # The white space is used to avoid concatenating words by accident.
-        prepared_article = prepared_article.replace(item, " ")
+    # We start the NLP process.
+    doc = NLP(cleaned_article)
+
+    article_sentences = [sent for sent in doc.sents]
+
+    words_of_interest = [
+        token.text for token in doc if token.text not in COMMON_WORDS]
 
     # We use the Counter class to count all words ocurrences.
-    # We then delete the empty string which is often the one with more occurrences.
-    scored_words = Counter(prepared_article.split(" "))
-    del scored_words[""]
+    scored_words = Counter(words_of_interest)
 
     for word in scored_words:
 
@@ -110,16 +113,15 @@ def get_summary(article, title=""):
         if word.isdigit():
             scored_words[word] = 0
 
-    top_sentences = get_top_sentences(cleaned_article, scored_words)
+    top_sentences = get_top_sentences(article_sentences, scored_words)
     top_sentences_length = sum([len(sentence) for sentence in top_sentences])
     reduction = 100 - (top_sentences_length / len(cleaned_article)) * 100
 
     summary_dict = {
-        "title": title,
         "top_words": get_top_words(scored_words),
         "top_sentences": top_sentences,
         "reduction": reduction,
-        "article_words": prepared_article
+        "article_words": " ".join(words_of_interest)
     }
 
     return summary_dict
@@ -174,11 +176,7 @@ def get_top_words(scored_words):
     # Once we have our words scored it's time to get top ones.
     top_words = list()
 
-    # We convert the sorted_words dict into a list of tuples and then sort it.
-    scored_words_sorted = sorted(
-        [[score, word] for word, score in scored_words.items()], reverse=True)
-
-    for score, word in scored_words_sorted:
+    for word, score in scored_words.most_common():
 
         add_to_list = True
 
@@ -187,7 +185,7 @@ def get_top_words(scored_words):
 
             # Sometimes we have the same word but in plural form, we skip the word when that happens.
             for item in top_words:
-                if word.upper() in item.upper():
+                if word.upper() in item.upper() or item.upper() in word.upper():
                     add_to_list = False
 
             if add_to_list:
@@ -196,7 +194,7 @@ def get_top_words(scored_words):
     return top_words[0:NUMBER_OF_TOP_WORDS]
 
 
-def get_top_sentences(cleaned_article, scored_words):
+def get_top_sentences(article_sentences, scored_words):
     """Gets the top scored sentences from the cleaned article.
 
     Parameters
@@ -218,12 +216,12 @@ def get_top_sentences(cleaned_article, scored_words):
     scored_sentences = list()
 
     # We take a reference of the order of the sentences, this will be used later.
-    for index, line in enumerate(tokenize.sent_tokenize(cleaned_article)):
+    for index, sent in enumerate(article_sentences):
 
         # In some edge cases we have duplicated sentences, we make sure that doesn't happen.
-        if line not in [line for score, index, line in scored_sentences]:
+        if sent.text not in [sent for score, index, sent in scored_sentences]:
             scored_sentences.append(
-                [score_line(line, scored_words), index, line])
+                [score_line(sent, scored_words), index, sent.text])
 
     top_sentences = list()
     counter = 0
@@ -261,28 +259,22 @@ def score_line(line, scored_words):
 
     """
 
-    temp_line = line[:]
-
     # We then apply the same clean algorithm. Removing common words.
-    for word in COMMON_WORDS:
-        temp_line = temp_line.replace(word, " ")
+    cleaned_line = [
+        token.text for token in line if token.text not in COMMON_WORDS]
 
     # We now sum the total number of ocurrences for all words.
     temp_score = 0
 
-    for word in temp_line.split(" "):
+    for word in cleaned_line:
         temp_score += scored_words[word]
 
     # We apply a bonus score to sentences that contain financial information.
-    line_lowercase = line.lower()
-    is_financial = False
+    line_lowercase = line.text.lower()
 
     for word in FINANCIAL_WORDS:
         if word in line_lowercase:
-            is_financial = True
+            temp_score *= FINANCIAL_SENTENCE_MULTIPLIER
             break
-
-    if is_financial:
-        temp_score *= FINANCIAL_SENTENCE_MULTIPLIER
 
     return temp_score
