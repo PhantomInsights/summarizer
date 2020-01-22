@@ -30,7 +30,7 @@ LINE_LENGTH_THRESHOLD = 150
 # It is very important to add spaces on these words.
 # Otherwise it will take into account partial words.
 COMMON_WORDS = {
-    " ", "  ", "\xa0", "#", ",", "|", "-", "‘", "’", ";", "(", ")", ".", ":", "¿", "?", '“',
+    " ", "  ", "\xa0", "#", ",", "|", "-", "‘", "’", ";", "(", ")", ".", ":", "¿", "?", '“', "/",
     '”', '"', "'", "%", "•", "«", "»", "foto", "photo", "video", "redacción", "nueve", "diez", "cien",
     "mil", "miles", "ciento", "cientos", "millones", "vale"
 }
