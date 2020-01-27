@@ -55,20 +55,11 @@ def add_extra_words():
 
     with open(ES_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
         for word in temp_file.read().splitlines():
-            COMMON_WORDS.add("{}".format(word))
+            COMMON_WORDS.add(word)
 
     with open(EN_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
         for word in temp_file.read().splitlines():
-            COMMON_WORDS.add("{}".format(word))
-
-    extra_words = list()
-
-    for word in COMMON_WORDS:
-        extra_words.append(word.title())
-        extra_words.append(word.upper())
-
-    for word in extra_words:
-        COMMON_WORDS.add(word)
+            COMMON_WORDS.add(word)
 
 
 add_extra_words()
@@ -98,7 +89,7 @@ def get_summary(article):
     article_sentences = [sent for sent in doc.sents]
 
     words_of_interest = [
-        token.text for token in doc if token.text not in COMMON_WORDS]
+        token.text for token in doc if token.lower_ not in COMMON_WORDS]
 
     # We use the Counter class to count all words ocurrences.
     scored_words = Counter(words_of_interest)
@@ -246,8 +237,8 @@ def score_line(line, scored_words):
 
     Parameters
     ----------
-    line : spacy.tokens.span.Span
-        A tokenized sentence from the article.
+    line : str
+        A sentence from the article.
 
     scored_words : Counter
         A dictionary of all the words from the article with their number of ocurrences.
@@ -259,9 +250,9 @@ def score_line(line, scored_words):
 
     """
 
-    # We remove the common words.
+    # We then apply the same clean algorithm. Removing common words.
     cleaned_line = [
-        token.text for token in line if token.text not in COMMON_WORDS]
+        token.text for token in line if token.lower_ not in COMMON_WORDS]
 
     # We now sum the total number of ocurrences for all words.
     temp_score = 0
