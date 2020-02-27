@@ -141,7 +141,7 @@ def init():
                         post_body = ""
 
                         for sentence in summary_dict["top_sentences"]:
-                            post_body += """> {}\n\n""".format(sentence)
+                            post_body += "> {}\n\n".format(sentence)
 
                         top_words = ""
 
