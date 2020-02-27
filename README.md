@@ -28,7 +28,7 @@ After installing the `spaCy` library you must install a language model to be abl
 
 For `Spanish` you can run this one:
 
-`python -m spacy download es_core_news_sm"`
+`python -m spacy download es_core_news_sm`
 
 For other languages please check the following link: https://spacy.io/usage/models
 
