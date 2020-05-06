@@ -154,8 +154,8 @@ def get_top_words(scored_words):
 
     Parameters
     ----------
-    scored_words : dict
-        A dict with all the words and their scores.
+    scored_words : collections.Counter
+        A Counter containing the article words and their scores.
 
     Returns
     -------
@@ -193,8 +193,8 @@ def get_top_sentences(article_sentences, scored_words):
     cleaned_article : str
         The original article after it has been cleaned and reformatted.
 
-    scored_words : dict
-        A dict with all the words and their scores.
+    scored_words : collections.Counter
+        A Counter containing the article words and their scores.
 
     Returns
     -------
@@ -233,15 +233,15 @@ def get_top_sentences(article_sentences, scored_words):
 
 
 def score_line(line, scored_words):
-    """Updates the Reddit post with the specified Markdown message.
+    """Calculates the score of the given line using the word scores.
 
     Parameters
     ----------
     line : spacy.tokens.span.Span
         A tokenized sentence from the article.
 
-    scored_words : Counter
-        A dictionary of all the words from the article with their number of ocurrences.
+    scored_words : collections.Counter
+        A Counter containing the article words and their scores.
 
     Returns
     -------
