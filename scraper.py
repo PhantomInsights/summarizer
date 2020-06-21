@@ -67,7 +67,7 @@ def scrape_html(html_source):
     # These class names/ids are known to add noise or duplicate text to the article.
     noisy_names = ["image", "img", "video", "subheadline", "editor", "fondea", "resumen", "tags", "sidebar", "comment",
                    "entry-title", "breaking_content", "pie", "tract", "caption", "tweet", "expert", "previous", "next",
-                   "compartir", "rightbar", "mas", "copyright"]
+                   "compartir", "rightbar", "mas", "copyright", "instagram-media"]
 
     for tag in soup.find_all("div"):
 
