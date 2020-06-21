@@ -138,10 +138,8 @@ def init():
                             summary_dict["article_words"])
 
                         # We start creating the comment body.
-                        post_body = ""
-
-                        for sentence in summary_dict["top_sentences"]:
-                            post_body += "> {}\n\n".format(sentence)
+                        post_body = "\n\n".join(
+                            ["> " + item for item in summary_dict["top_sentences"]])
 
                         top_words = ""
 
