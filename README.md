@@ -225,11 +225,11 @@ Then I added a copy of each word in uppercase and title form. Which means the `s
 ```python
 with open(ES_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
     for word in temp_file.read().splitlines():
-        COMMON_WORDS.add("{}".format(word))
+        COMMON_WORDS.add(word)
 
 with open(EN_STOPWORDS_FILE, "r", encoding="utf-8") as temp_file:
     for word in temp_file.read().splitlines():
-        COMMON_WORDS.add("{}".format(word))
+        COMMON_WORDS.add(word)
 
 extra_words = list()
 
