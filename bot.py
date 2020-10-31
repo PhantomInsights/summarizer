@@ -114,8 +114,11 @@ def init():
                     try:
                         with requests.get(clean_url, headers=HEADERS, timeout=10) as response:
 
-                            # Sometimes Requests makes an incorrect guess, we force it to use utf-8
-                            if response.encoding == "ISO-8859-1":
+                            # Most of the times the encoding is utf-8 but in edge cases
+                            # we set it to ISO-8859-1 when it is present in the HTML header.
+                            if "iso-8859-1" in response.text.lower():
+                                response.encoding = "iso-8859-1"
+                            elif response.encoding == "ISO-8859-1":
                                 response.encoding = "utf-8"
 
                             html_source = response.text
