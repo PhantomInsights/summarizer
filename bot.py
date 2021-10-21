@@ -72,7 +72,7 @@ def update_log(post_id):
     """
 
     with open(POSTS_LOG, "a", encoding="utf-8") as log_file:
-        return log_file.write("{}\n".format(post_id))
+        log_file.write("{}\n".format(post_id))
 
 
 def log_error(error_message):
@@ -86,7 +86,7 @@ def log_error(error_message):
     """
 
     with open(ERROR_LOG, "a", encoding="utf-8") as log_file:
-        return log_file.write("{}\n".format(error_message))
+        log_file.write("{}\n".format(error_message))
 
 
 def init():
