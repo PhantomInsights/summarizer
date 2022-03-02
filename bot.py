@@ -152,7 +152,7 @@ def init():
                         post_message = TEMPLATE.format(
                             article_title, clean_url, summary_dict["reduction"], article_date, post_body, image_url, top_words)
 
-                        reddit.submission(submission).reply(post_message)
+                        reddit.submission(submission.id).reply(post_message)
                         update_log(submission.id)
                         print("Replied to:", submission.id)
                     else:
